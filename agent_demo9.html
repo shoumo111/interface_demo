@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>校园通知Agent · 智谱AI版</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    body {
+      background: #f7f8fa;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .app {
+      display: flex;
+      height: 100vh;
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    /* ===== 侧边栏 ===== */
+    .sidebar {
+      width: 280px;
+      min-width: 280px;
+      background: #f7f8fa;
+      border-right: 1px solid #e5e7eb;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .sidebar .logo {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 16px 12px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      flex-shrink: 0;
+    }
+
+    .sidebar .logo .left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .sidebar .logo .left .icon {
+      width: 32px;
+      height: 32px;
+      background: #1f2937;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 16px;
+    }
+
+    .sidebar .logo .settings-btn {
+      background: none;
+      border: none;
+      color: #9ca3af;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: 0.15s;
+    }
+
+    .sidebar .logo .settings-btn:hover {
+      background: #e5e7eb;
+      color: #1f2937;
+    }
+
+    .sidebar .new-chat-btn {
+      margin: 12px 16px;
+      padding: 10px 14px;
+      background: #1f2937;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .sidebar .new-chat-btn:hover {
+      background: #111827;
+    }
+
+    /* ===== 筛选栏 ===== */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 16px 4px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      flex-shrink: 0;
+      background: #fafbfc;
+      min-height: 36px;
+    }
+
+    .filter-bar label {
+      font-size: 12px;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .filter-bar label input[type="checkbox"] {
+      accent-color: #1f2937;
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
+
+    .filter-bar .filter-hint {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .filter-bar .filter-hint .badge {
+      background: #fef3c7;
+      color: #92400e;
+      padding: 1px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .sidebar .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px 4px 16px;
+      flex-shrink: 0;
+    }
+
+    .sidebar .history-header .label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #9ca3af;
+      letter-spacing: 0.5px;
+    }
+
+    .sidebar .history-header .count {
+      font-size: 11px;
+      color: #9ca3af;
+      background: #e5e7eb;
+      padding: 0 8px;
+      border-radius: 10px;
+    }
+
+    .sidebar .history-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 8px 8px 8px;
+    }
+
+    /* ===== 历史条目 ===== */
+    .sidebar .history-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.15s;
+      margin-bottom: 2px;
+      font-size: 14px;
+      color: #374151;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid transparent;
+      position: relative;
+    }
+
+    .sidebar .history-item:hover {
+      background: #e5e7eb;
+    }
+
+    .sidebar .history-item.active {
+      background: #e5e7eb;
+      border-color: #d1d5db;
+    }
+
+    .sidebar .history-item .h-icon {
+      font-size: 14px;
+      color: #9ca3af;
+      flex-shrink: 0;
+    }
+
+    .sidebar .history-item .h-text {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .sidebar .history-item .h-status {
+      font-size: 10px;
+      padding: 1px 8px;
+      border-radius: 12px;
+      background: #e5e7eb;
+      color: #6b7280;
+      flex-shrink: 0;
+    }
+
+    .sidebar .history-item .h-status.sent {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .sidebar .history-item .h-status.pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .sidebar .history-item .h-status.incomplete {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .sidebar .history-item .actions {
+      display: none;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .sidebar .history-item:hover .actions {
+      display: flex;
+    }
+
+    .sidebar .history-item .actions button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #9ca3af;
+      transition: 0.15s;
+    }
+
+    .sidebar .history-item .actions button:hover {
+      background: #d1d5db;
+      color: #1f2937;
+    }
+
+    .sidebar .history-item .actions .delete-btn:hover {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .sidebar .history-item .actions .pin-btn:hover {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .sidebar .history-item .actions .pin-btn.pinned {
+      color: #d97706;
+    }
+
+    .sidebar .history-item.pinned {
+      border-left: 3px solid #d97706;
+      background: #fffbeb;
+    }
+
+    .sidebar .history-item.pinned:hover {
+      background: #fef3c7;
+    }
+
+    /* ===== 底部 ===== */
+    .sidebar .footer {
+      border-top: 1px solid #e5e7eb;
+      padding: 10px 16px;
+      font-size: 12px;
+      color: #9ca3af;
+      text-align: center;
+      flex-shrink: 0;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .sidebar .footer .clear-all-btn {
+      background: none;
+      border: none;
+      color: #9ca3af;
+      font-size: 12px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .sidebar .footer .clear-all-btn:hover {
+      color: #dc2626;
+    }
+
+    /* ===== 主区域 ===== */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: #ffffff;
+    }
+
+    .main .header {
+      padding: 16px 24px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .main .header .title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .main .header .title small {
+      font-weight: 400;
+      font-size: 13px;
+      color: #9ca3af;
+      margin-left: 8px;
+    }
+
+    .main .header .status-badge {
+      font-size: 12px;
+      padding: 4px 14px;
+      border-radius: 20px;
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .main .header .status-badge.ai-mode {
+      background: #ede9fe;
+      color: #5b21b6;
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      background: #fafbfc;
+    }
+
+    /* ===== 消息 ===== */
+    .msg {
+      display: flex;
+      gap: 14px;
+      max-width: 85%;
+      animation: fadeUp 0.3s ease;
+    }
+
+    .msg.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .msg.agent {
+      align-self: flex-start;
+    }
+
+    .msg .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      background: #e5e7eb;
+    }
+
+    .msg.user .avatar {
+      background: #1f2937;
+      color: white;
+    }
+
+    .msg.agent .avatar {
+      background: #e5e7eb;
+      color: #1f2937;
+    }
+
+    .msg .bubble {
+      padding: 14px 18px;
+      border-radius: 16px;
+      font-size: 15px;
+      line-height: 1.7;
+      word-break: break-word;
+    }
+
+    .msg.user .bubble {
+      background: #1f2937;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg.agent .bubble {
+      background: white;
+      color: #1f2937;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+      border: 1px solid #e5e7eb;
+    }
+
+    .msg .bubble .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 4px 0;
+      font-size: 14px;
+    }
+
+    .msg .bubble .step .step-icon {
+      font-size: 16px;
+      min-width: 24px;
+      text-align: center;
+    }
+
+    .msg .bubble .step .step-text {
+      flex: 1;
+    }
+
+    .msg .bubble .step.done .step-text {
+      color: #1f2937;
+    }
+
+    .msg .bubble .step.running .step-text {
+      color: #6b7280;
+    }
+
+    .msg .bubble .step.running .step-icon {
+      animation: spin 1s linear infinite;
+    }
+
+    .msg .bubble .step.done .step-icon {
+      color: #16a34a;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes fadeUp {
+      0% {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .msg .bubble .result-card {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-top: 8px;
+      border: 1px solid #e5e7eb;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 4px 16px;
+      font-size: 14px;
+    }
+
+    .msg .bubble .result-card .label {
+      color: #9ca3af;
+    }
+
+    .msg .bubble .result-card .value {
+      color: #1f2937;
+      font-weight: 500;
+    }
+
+    .msg .bubble .result-card .value.missing {
+      color: #dc2626;
+      font-weight: 600;
+    }
+
+    /* ===== 输入区 ===== */
+    .input-area {
+      padding: 16px 24px 24px 24px;
+      border-top: 1px solid #f0f0f0;
+      background: white;
+      flex-shrink: 0;
+    }
+
+    .input-area .input-wrapper {
+      display: flex;
+      gap: 12px;
+      background: #f7f8fa;
+      border-radius: 16px;
+      padding: 4px 4px 4px 20px;
+      border: 2px solid transparent;
+      transition: 0.2s;
+    }
+
+    .input-area .input-wrapper:focus-within {
+      border-color: #1f2937;
+      background: white;
+    }
+
+    .input-area .input-wrapper input {
+      flex: 1;
+      border: none;
+      padding: 14px 0;
+      font-size: 15px;
+      outline: none;
+      background: transparent;
+      color: #1f2937;
+    }
+
+    .input-area .input-wrapper input::placeholder {
+      color: #9ca3af;
+    }
+
+    .input-area .input-wrapper .btn-send {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      border: none;
+      background: #1f2937;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      transition: 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .input-area .input-wrapper .btn-send:hover {
+      background: #111827;
+    }
+
+    .input-area .input-wrapper .btn-send:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .input-area .shortcuts {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .input-area .shortcuts .chip {
+      padding: 4px 14px;
+      border-radius: 16px;
+      border: 1px solid #e5e7eb;
+      background: white;
+      font-size: 12px;
+      color: #6b7280;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .input-area .shortcuts .chip:hover {
+      background: #f3f4f6;
+      border-color: #d1d5db;
+    }
+
+    /* ===== Modal ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 28px;
+      max-width: 520px;
+      width: 100%;
+      padding: 32px 36px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+      animation: modalPop 0.25s ease;
+    }
+
+    @keyframes modalPop {
+      0% {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .modal .icon-big {
+      font-size: 44px;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .modal h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .modal .sub {
+      color: #64748b;
+      text-align: center;
+      font-size: 14px;
+      margin-bottom: 18px;
+    }
+
+    .modal .missing-list {
+      background: #fef2f2;
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin-bottom: 18px;
+      border: 1px solid #fecaca;
+    }
+
+    .modal .missing-list li {
+      list-style: none;
+      padding: 3px 0;
+      color: #991b1b;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .modal .missing-list li::before {
+      content: '⚠️ ';
+    }
+
+    .modal .extract-preview {
+      background: #f8fafc;
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 14px;
+      color: #1e293b;
+      margin-bottom: 20px;
+      border: 1px solid #e9edf2;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 4px 16px;
+    }
+
+    .modal .extract-preview .label {
+      color: #94a3b8;
+    }
+
+    .modal .extract-preview .value {
+      font-weight: 500;
+    }
+
+    .modal .extract-preview .value.missing {
+      color: #dc2626;
+    }
+
+    .modal .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .modal .actions .btn {
+      padding: 10px 24px;
+      border-radius: 30px;
+      border: none;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.15s;
+      min-width: 100px;
+    }
+
+    .modal .actions .btn-secondary {
+      background: #f3f4f6;
+      color: #1f2937;
+    }
+
+    .modal .actions .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .modal .actions .btn-primary {
+      background: #1f2937;
+      color: white;
+    }
+
+    .modal .actions .btn-primary:hover {
+      background: #111827;
+    }
+
+    .modal .actions .btn-warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .modal .actions .btn-warning:hover {
+      background: #fde68a;
+    }
+
+    /* ===== 滚动条 ===== */
+    .messages::-webkit-scrollbar,
+    .sidebar .history-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .messages::-webkit-scrollbar-track,
+    .sidebar .history-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .messages::-webkit-scrollbar-thumb,
+    .sidebar .history-list::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 10px;
+    }
+
+    @media (max-width: 700px) {
+      .sidebar {
+        display: none;
+      }
+
+      .messages {
+        padding: 16px;
+      }
+
+      .msg {
+        max-width: 95%;
+      }
+
+      .modal {
+        padding: 24px 20px;
+      }
+    }
+
+    /* ===== 确认对话框 ===== */
+    .confirm-dialog {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .confirm-dialog.show {
+      display: flex;
+    }
+
+    .confirm-dialog .dialog-box {
+      background: white;
+      border-radius: 20px;
+      padding: 28px 32px;
+      max-width: 380px;
+      width: 100%;
+      text-align: center;
+      animation: modalPop 0.2s ease;
+    }
+
+    .confirm-dialog .dialog-box h3 {
+      font-size: 18px;
+      color: #1f2937;
+      margin-bottom: 6px;
+    }
+
+    .confirm-dialog .dialog-box p {
+      color: #6b7280;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .confirm-dialog .dialog-box .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .confirm-dialog .dialog-box .actions button {
+      padding: 8px 24px;
+      border-radius: 30px;
+      border: none;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .confirm-dialog .dialog-box .actions .btn-cancel {
+      background: #f3f4f6;
+      color: #1f2937;
+    }
+
+    .confirm-dialog .dialog-box .actions .btn-cancel:hover {
+      background: #e5e7eb;
+    }
+
+    .confirm-dialog .dialog-box .actions .btn-danger {
+      background: #dc2626;
+      color: white;
+    }
+
+    .confirm-dialog .dialog-box .actions .btn-danger:hover {
+      background: #b91c1c;
+    }
+
+    /* ===== API Key 设置 ===== */
+    .api-key-setup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(8px);
+      z-index: 3000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .api-key-setup.show {
+      display: flex;
+    }
+
+    .api-key-setup .setup-box {
+      background: white;
+      border-radius: 28px;
+      padding: 36px 40px;
+      max-width: 460px;
+      width: 100%;
+      animation: modalPop 0.25s ease;
+    }
+
+    .api-key-setup .setup-box h2 {
+      font-size: 20px;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+
+    .api-key-setup .setup-box .sub {
+      color: #64748b;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .api-key-setup .setup-box .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .api-key-setup .setup-box .input-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .api-key-setup .setup-box .input-group input {
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 2px solid #e5e7eb;
+      font-size: 14px;
+      outline: none;
+      transition: 0.15s;
+    }
+
+    .api-key-setup .setup-box .input-group input:focus {
+      border-color: #1f2937;
+    }
+
+    .api-key-setup .setup-box .input-group input::placeholder {
+      color: #9ca3af;
+    }
+
+    .api-key-setup .setup-box .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    .api-key-setup .setup-box .actions .btn {
+      padding: 10px 28px;
+      border-radius: 30px;
+      border: none;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .api-key-setup .setup-box .actions .btn-primary {
+      background: #1f2937;
+      color: white;
+    }
+
+    .api-key-setup .setup-box .actions .btn-primary:hover {
+      background: #111827;
+    }
+
+    .api-key-setup .setup-box .actions .btn-secondary {
+      background: #f3f4f6;
+      color: #1f2937;
+    }
+
+    .api-key-setup .setup-box .actions .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .api-key-setup .setup-box .hint {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 12px;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e9edf2;
+    }
+
+    .api-key-setup .setup-box .hint a {
+      color: #1f2937;
+    }
+
+    .empty-state {
+      padding: 30px 16px;
+      text-align: center;
+      color: #9ca3af;
+      font-size: 13px;
+    }
+
+    .empty-state .big-icon {
+      font-size: 28px;
+      display: block;
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app">
+    <!-- ===== 左侧栏 ===== -->
+    <div class="sidebar">
+      <div class="logo">
+        <div class="left">
+          <div class="icon">🏫</div>
+          校园通知Agent
+        </div>
+        <button class="settings-btn" onclick="showApiSetup()" title="设置API Key">⚙️</button>
+      </div>
+
+      <button class="new-chat-btn" onclick="newChat()">
+        <span>+</span> 新对话
+      </button>
+
+      <!-- ===== 筛选栏 ===== -->
+      <div class="filter-bar">
+        <label>
+          <input type="checkbox" id="filterIncomplete" onchange="renderHistory()" />
+          🔴 只看信息不全
+        </label>
+        <span class="filter-hint">
+          共 <span id="totalSessionCount">0</span> 条
+          <span class="badge" id="incompleteBadge" style="display:none;">0</span>
+        </span>
+      </div>
+
+      <div class="history-header">
+        <span class="label">历史记录</span>
+        <span class="count" id="sessionCount">0</span>
+      </div>
+
+      <div class="history-list" id="historyList">
+        <!-- 动态生成 -->
+      </div>
+
+      <div class="footer">
+        <span>🤖 智谱AI · v1.0</span>
+        <span id="totalCount"></span>
+      </div>
+    </div>
+
+    <!-- ===== 右侧主区域 ===== -->
+    <div class="main">
+      <div class="header">
+        <div class="title">
+          💬 通知处理
+          <small id="chatTitle">新对话</small>
+        </div>
+        <div class="status-badge ai-mode" id="connectionStatus">🧠 AI 就绪</div>
+      </div>
+
+      <div class="messages" id="messageContainer">
+        <div class="msg agent">
+          <div class="avatar">🤖</div>
+          <div class="bubble">
+            👋 你好！我是校园通知助手 (智谱AI版)。<br />
+            输入你的通知内容，AI 会自动提取关键信息并让你确认。<br />
+            <span style="font-size:13px;color:#9ca3af;">💡 试试输入：明天下午3点，全体大二学生在操场集合</span>
+            <div
+              style="margin-top:8px;font-size:12px;color:#8b5cf6;background:#ede9fe;padding:4px 12px;border-radius:12px;display:inline-block;">
+              ⚡ 已接入智谱 GLM-4-Flash
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <div class="input-wrapper">
+          <input type="text" id="userInput" placeholder="输入通知内容..." autofocus />
+          <button class="btn-send" id="sendBtn" onclick="handleSend()">➤</button>
+        </div>
+        <div class="shortcuts">
+          <span class="chip" onclick="fillExample(1)">📌 体测通知</span>
+          <span class="chip" onclick="fillExample(2)">📌 会议通知</span>
+          <span class="chip" onclick="fillExample(3)">📌 活动通知</span>
+          <span class="chip" onclick="fillExample(4)">📌 复杂通知</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 校验Modal ===== -->
+  <div class="modal-overlay" id="validationModal">
+    <div class="modal">
+      <div class="icon-big" id="modalIcon">📋</div>
+      <h2 id="modalTitle">确认发送通知？</h2>
+      <p class="sub" id="modalSub">请核对以下提取信息</p>
+      <div class="missing-list" id="missingList" style="display:none;"></div>
+      <div class="extract-preview" id="extractPreview">
+        <span class="label">👥 人群</span><span class="value" id="previewAudience">—</span>
+        <span class="label">⏰ 时间</span><span class="value" id="previewTime">—</span>
+        <span class="label">📍 地点</span><span class="value" id="previewLocation">—</span>
+        <span class="label">📝 备注</span><span class="value" id="previewNotes">—</span>
+      </div>
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="handleEdit()">✏️ 修改</button>
+        <button class="btn btn-primary" id="confirmBtn" onclick="handleConfirm()">✅ 发送</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 确认删除对话框 ===== -->
+  <div class="confirm-dialog" id="confirmDialog">
+    <div class="dialog-box">
+      <h3>🗑️ 确认删除？</h3>
+      <p id="deleteMessage">确定要删除这个对话吗？此操作不可撤销。</p>
+      <div class="actions">
+        <button class="btn-cancel" onclick="closeConfirmDialog()">取消</button>
+        <button class="btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== API Key 设置弹窗 ===== -->
+  <div class="api-key-setup" id="apiSetup">
+    <div class="setup-box">
+      <h2>🔑 设置 API Key</h2>
+      <p class="sub">输入你的智谱AI API Key，即可使用 AI 智能提取功能</p>
+      <div class="input-group">
+        <label for="apiKeyInput">API Key</label>
+        <input type="password" id="apiKeyInput" placeholder="请输入你的智谱 API Key..." />
+      </div>
+      <div class="hint">
+        💡 获取 API Key：<a href="https://open.bigmodel.cn/" target="_blank">https://open.bigmodel.cn/</a><br />
+        GLM-4-Flash 目前完全免费，无需担心费用。
+      </div>
+      <div class="actions">
+        <button class="btn btn-secondary" onclick="hideApiSetup()">取消</button>
+        <button class="btn btn-primary" onclick="saveApiKey()">保存并启用</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    //  配置
+    // ============================================================
+    const ZHIPU_API_URL = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
+
+    // ============================================================
+    //  数据层
+    // ============================================================
+    let sessions = [];
+    let currentSessionId = null;
+    let pendingTask = null;
+    let isProcessing = false;
+    let deleteTargetId = null;
+    let apiKey = localStorage.getItem('zhipu_api_key') || '';
+
+    // ============================================================
+    //  初始化
+    // ============================================================
+    window.onload = function () {
+      loadFromStorage();
+      if (sessions.length === 0) {
+        newChat();
+      } else {
+        const last = sessions[sessions.length - 1];
+        currentSessionId = last.id;
+        renderHistory();
+        renderMessages(last.messages);
+        updateChatTitle(last.title);
+      }
+      updateCounters();
+
+      if (!apiKey) {
+        setTimeout(() => showApiSetup(), 500);
+      }
+
+      document.getElementById('userInput').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleSend();
+        }
+      });
+    };
+
+    // ============================================================
+    //  API Key 管理
+    // ============================================================
+    function showApiSetup() {
+      document.getElementById('apiSetup').classList.add('show');
+      document.getElementById('apiKeyInput').value = apiKey;
+      document.getElementById('apiKeyInput').focus();
+    }
+
+    function hideApiSetup() {
+      document.getElementById('apiSetup').classList.remove('show');
+    }
+
+    function saveApiKey() {
+      const key = document.getElementById('apiKeyInput').value.trim();
+      if (!key) { alert('请输入有效的 API Key'); return; }
+      apiKey = key;
+      localStorage.setItem('zhipu_api_key', key);
+      hideApiSetup();
+      updateStatus('🧠 AI 已就绪', true);
+    }
+
+    function updateStatus(text, isAI) {
+      const badge = document.getElementById('connectionStatus');
+      badge.textContent = text;
+      badge.className = isAI ? 'status-badge ai-mode' : 'status-badge';
+    }
+
+    // ============================================================
+    //  存储
+    // ============================================================
+    function loadFromStorage() {
+      const data = localStorage.getItem('sessions_v5');
+      if (data) {
+        try { sessions = JSON.parse(data); } catch (e) { sessions = []; }
+      }
+      sessions.forEach(s => {
+        if (s.pinned === undefined) s.pinned = false;
+        if (!s.notifications) s.notifications = [];
+        if (!s.hasIncomplete) s.hasIncomplete = false;
+      });
+    }
+
+    function saveToStorage() {
+      // 重新计算 hasIncomplete
+      sessions.forEach(s => {
+        s.hasIncomplete = s.notifications.some(n => n.isComplete === false);
+      });
+      localStorage.setItem('sessions_v5', JSON.stringify(sessions));
+      updateCounters();
+    }
+
+    // ============================================================
+    //  会话管理
+    // ============================================================
+    function newChat() {
+      const session = {
+        id: Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
+        title: '新对话',
+        messages: [{
+          role: 'agent',
+          content: `👋 你好！我是校园通知助手 (智谱AI版)。<br>输入你的通知内容，AI 会自动提取关键信息并让你确认。<br><span style="font-size:13px;color:#9ca3af;">💡 试试输入：明天下午3点，全体大二学生在操场集合</span>
+                    <div style="margin-top:8px;font-size:12px;color:#8b5cf6;background:#ede9fe;padding:4px 12px;border-radius:12px;display:inline-block;">
+                      ⚡ 已接入智谱 GLM-4-Flash
+                    </div>`
+        }],
+        notifications: [],
+        createdAt: new Date().toISOString(),
+        lastMessage: '',
+        pinned: false,
+        hasIncomplete: false
+      };
+      sessions.push(session);
+      currentSessionId = session.id;
+      saveToStorage();
+      renderHistory();
+      renderMessages(session.messages);
+      updateChatTitle(session.title);
+      document.getElementById('userInput').value = '';
+      document.getElementById('userInput').focus();
+      updateCounters();
+    }
+
+    function switchSession(id) {
+      if (id === currentSessionId) return;
+      currentSessionId = id;
+      const session = sessions.find(s => s.id === id);
+      if (session) {
+        renderMessages(session.messages);
+        updateChatTitle(session.title);
+        renderHistory();
+      }
+    }
+
+    function updateChatTitle(title) {
+      document.getElementById('chatTitle').textContent = '· ' + title;
+    }
+
+    function getCurrentSession() {
+      return sessions.find(s => s.id === currentSessionId);
+    }
+
+    // ============================================================
+    //  通知管理
+    // ============================================================
+    function addNotification(sessionId, data, isComplete) {
+      const session = sessions.find(s => s.id === sessionId);
+      if (!session) return;
+      const notif = {
+        id: 'n' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
+        audience: data.audience,
+        time: data.time,
+        location: data.location,
+        notes: data.notes || '无',
+        isComplete: isComplete,
+        sentAt: new Date().toISOString(),
+        rawText: data.rawText || ''
+      };
+      session.notifications.push(notif);
+      session.hasIncomplete = session.notifications.some(n => n.isComplete === false);
+      saveToStorage();
+      return notif;
+    }
+
+    function sessionHasIncomplete(sessionId) {
+      const s = sessions.find(x => x.id === sessionId);
+      return s ? s.hasIncomplete : false;
+    }
+
+    function getSessionsForDisplay() {
+      const filterIncomplete = document.getElementById('filterIncomplete').checked;
+      let list = [...sessions];
+      if (filterIncomplete) {
+        list = list.filter(s => s.hasIncomplete);
+      }
+      return list;
+    }
+
+    // ============================================================
+    //  历史记录操作
+    // ============================================================
+    function togglePin(id, e) {
+      e.stopPropagation();
+      const session = sessions.find(s => s.id === id);
+      if (session) {
+        session.pinned = !session.pinned;
+        saveToStorage();
+        renderHistory();
+      }
+    }
+
+    function showDeleteConfirm(id, e) {
+      e.stopPropagation();
+      deleteTargetId = id;
+      const session = sessions.find(s => s.id === id);
+      document.getElementById('deleteMessage').textContent =
+        `确定要删除「${session ? session.title : '这个'}」对话吗？此操作不可撤销。`;
+      document.getElementById('confirmDialog').classList.add('show');
+    }
+
+    function closeConfirmDialog() {
+      document.getElementById('confirmDialog').classList.remove('show');
+      deleteTargetId = null;
+    }
+
+    function confirmDelete() {
+      if (!deleteTargetId) return;
+      const index = sessions.findIndex(s => s.id === deleteTargetId);
+      if (index !== -1) {
+        const isCurrent = sessions[index].id === currentSessionId;
+        sessions.splice(index, 1);
+        saveToStorage();
+        if (isCurrent || sessions.length === 0) {
+          if (sessions.length > 0) {
+            currentSessionId = sessions[0].id;
+            const session = sessions[0];
+            renderMessages(session.messages);
+            updateChatTitle(session.title);
+          } else {
+            newChat();
+          }
+        } else {
+          renderMessages(getCurrentSession().messages);
+        }
+        renderHistory();
+        updateCounters();
+      }
+      closeConfirmDialog();
+    }
+
+    function clearAllSessions() {
+      if (sessions.length === 0) return;
+      if (confirm('确定要清空所有对话吗？此操作不可撤销。')) {
+        sessions = [];
+        saveToStorage();
+        newChat();
+        renderHistory();
+        updateCounters();
+      }
+    }
+
+    // ============================================================
+    //  渲染
+    // ============================================================
+    function renderHistory() {
+      const container = document.getElementById('historyList');
+      const list = getSessionsForDisplay();
+
+      // 更新筛选栏信息
+      const total = sessions.length;
+      const incompleteCount = sessions.filter(s => s.hasIncomplete).length;
+      document.getElementById('totalSessionCount').textContent = total;
+      const badge = document.getElementById('incompleteBadge');
+      if (incompleteCount > 0) {
+        badge.style.display = 'inline';
+        badge.textContent = '⚠️ ' + incompleteCount + ' 条信息不全';
+      } else {
+        badge.style.display = 'none';
+      }
+
+      if (list.length === 0) {
+        const msg = document.getElementById('filterIncomplete').checked ?
+          '🎉 所有通知信息完整！' :
+          '暂无对话，点击「新对话」开始';
+        container.innerHTML = `<div class="empty-state"><span class="big-icon">💬</span>${msg}</div>`;
+        return;
+      }
+
+      let html = '';
+      const sorted = [...list].sort((a, b) => {
+        if (a.pinned && !b.pinned) return -1;
+        if (!a.pinned && b.pinned) return 1;
+        return 0;
+      });
+
+      sorted.forEach(s => {
+        const isActive = s.id === currentSessionId;
+        const hasInc = s.hasIncomplete;
+        const statusText = hasInc ? '⚠️ 信息不全' : (s.lastMessage ? '✅ 已处理' : '新对话');
+        const statusClass = hasInc ? 'incomplete' : (s.lastMessage ? 'sent' : 'pending');
+        const icon = hasInc ? '⚠️' : (s.notifications.length > 0 ? '📢' : '💬');
+        const pinnedClass = s.pinned ? 'pinned' : '';
+        const pinIcon = s.pinned ? '📌' : '📌';
+        const pinTitle = s.pinned ? '取消置顶' : '置顶';
+
+        html += `
+          <div class="history-item ${isActive ? 'active' : ''} ${pinnedClass}" onclick="switchSession('${s.id}')">
+            <span class="h-icon">${icon}</span>
+            <span class="h-text">${s.title}</span>
+            <span class="h-status ${statusClass}">${statusText}</span>
+            <span class="actions">
+              <button class="pin-btn ${s.pinned ? 'pinned' : ''}" onclick="togglePin('${s.id}', event)" title="${pinTitle}">${pinIcon}</button>
+              <button class="delete-btn" onclick="showDeleteConfirm('${s.id}', event)" title="删除">✕</button>
+            </span>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+      updateCounters();
+    }
+
+    function renderMessages(messages) {
+      const container = document.getElementById('messageContainer');
+      container.innerHTML = '';
+      messages.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = `msg ${msg.role}`;
+        const avatar = msg.role === 'user' ? '👤' : '🤖';
+        div.innerHTML = `
+          <div class="avatar">${avatar}</div>
+          <div class="bubble">${msg.content}</div>
+        `;
+        container.appendChild(div);
+      });
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function addMessage(role, content, save = true) {
+      const session = getCurrentSession();
+      if (!session) return;
+      session.messages.push({ role, content });
+      if (save) saveToStorage();
+      renderMessages(session.messages);
+      const userMsg = session.messages.find(m => m.role === 'user');
+      if (userMsg) {
+        const title = userMsg.content.replace(/<[^>]*>/g, '').substring(0, 20) + (userMsg.content.length > 20 ? '...' : '');
+        session.title = title;
+        updateChatTitle(title);
+        renderHistory();
+      }
+    }
+
+    function updateCounters() {
+      const total = sessions.length;
+      const incomplete = sessions.filter(s => s.hasIncomplete).length;
+      document.getElementById('sessionCount').textContent = total;
+      document.getElementById('totalCount').textContent = `共 ${total} 条对话`;
+      // 也更新筛选栏
+      document.getElementById('totalSessionCount').textContent = total;
+      const badge = document.getElementById('incompleteBadge');
+      if (incomplete > 0) {
+        badge.style.display = 'inline';
+        badge.textContent = '⚠️ ' + incomplete + ' 条信息不全';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    // ============================================================
+    //  规则提取（降级）
+    // ============================================================
+    function extractInfoRule(text) {
+      let audience = '未识别';
+      let time = '未识别';
+      let location = '未识别';
+      let notes = '无';
+
+      const gradeMap = {
+        '大一': '大一新生',
+        '大二': '大二学生',
+        '大三': '大三学生',
+        '大四': '大四毕业生',
+        '全体': '全体师生',
+        '老师': '全体教职工',
+        '党员': '全体党员',
+        '研究生': '研究生'
+      };
+      for (const [key, val] of Object.entries(gradeMap)) {
+        if (text.includes(key)) { audience = val; break; }
+      }
+      if (audience === '未识别') {
+        const match = text.match(/([\u4e00-\u9fa5]{1,4}(?:班|级))/);
+        if (match) audience = match[1];
+      }
+
+      const timeRegex = /(明天|后天|下[周一二三四五六日]|[0-9]{1,2}[:：][0-9]{2}|[0-9]{1,2}点|[上中下]午[0-9]{1,2}点)/;
+      const found = text.match(timeRegex);
+      if (found) time = found[0];
+
+      const locationRegex = /(?:在|于|前往|到)\s*([\u4e00-\u9fa5a-zA-Z0-9]{1,12}(?:教室|楼|厅|场|馆|室|办|中心|操场|广场|楼前|楼下|报告厅|会议室|堂|园|馆|院|处|科))/;
+      const locMatch = text.match(locationRegex);
+      if (locMatch) location = locMatch[1];
+
+      let remaining = text;
+      if (locMatch) remaining = remaining.replace(locMatch[0], '');
+      if (found) remaining = remaining.replace(found[0], '');
+      for (const key of Object.keys(gradeMap)) {
+        remaining = remaining.replace(key, '');
+      }
+      const cleanRemaining = remaining.replace(/[，,。、\s]+/g, ' ').trim();
+      if (cleanRemaining.length > 2 && cleanRemaining.length < 50) {
+        notes = cleanRemaining;
+      }
+
+      return { audience, time, location, notes };
+    }
+
+    function validateFields(data) {
+      const required = ['audience', 'time', 'location'];
+      const missing = [];
+      const labels = { audience: '目标人群', time: '时间', location: '地点' };
+      for (const field of required) {
+        if (!data[field] || data[field] === '未识别') {
+          missing.push(labels[field]);
+        }
+      }
+      return missing;
+    }
+
+    // ============================================================
+    //  AI 提取
+    // ============================================================
+    async function extractInfoWithAI(text) {
+      if (!apiKey) {
+        updateStatus('⚠️ 请先设置 API Key', false);
+        return extractInfoRule(text);
+      }
+
+      try {
+        const response = await fetch(ZHIPU_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: 'glm-4-flash',
+            messages: [{
+              role: 'system',
+              content: `你是一个校园通知信息提取专家。从用户输入的通知中提取以下4个字段，只返回JSON格式，不要有其他内容。
+              字段说明：
+              1. audience（目标人群）：如"大二学生"、"全体师生"等
+              2. time（时间）：如"明天下午3点"等
+              3. location（地点）：如"操场"、"会议室"等
+              4. notes（备注）：其他重要信息
+              如果某个字段无法识别，值设为"未识别"。
+              只返回JSON，不要解释。`
+            }, {
+              role: 'user',
+              content: text
+            }],
+            temperature: 0.1,
+            max_tokens: 200
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`API 请求失败: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const content = data.choices[0].message.content;
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        const jsonStr = jsonMatch ? jsonMatch[0] : content;
+        const result = JSON.parse(jsonStr);
+
+        return {
+          audience: result.audience || '未识别',
+          time: result.time || '未识别',
+          location: result.location || '未识别',
+          notes: result.notes || '无'
+        };
+
+      } catch (error) {
+        console.error('AI 调用失败，使用规则提取:', error);
+        updateStatus('⚠️ AI 降级到规则模式', false);
+        return extractInfoRule(text);
+      }
+    }
+
+    // ============================================================
+    //  核心发送逻辑
+    // ============================================================
+    async function handleSend() {
+      if (isProcessing) return;
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      if (!apiKey) {
+        showApiSetup();
+        return;
+      }
+
+      isProcessing = true;
+      document.getElementById('sendBtn').disabled = true;
+      updateStatus('🧠 AI 思考中...', true);
+
+      addMessage('user', text);
+
+      const session = getCurrentSession();
+      const stepMsgId = session.messages.length;
+      const stepContent = buildStepContent('initial');
+      addMessage('agent', stepContent, false);
+      saveToStorage();
+
+      let result = null;
+      let missing = [];
+
+      try {
+        result = await extractInfoWithAI(text);
+        if (result) updateStatus('🧠 AI 已就绪', true);
+      } catch (err) {
+        result = extractInfoRule(text);
+      }
+
+      missing = validateFields(result);
+
+      // 构建步骤显示
+      const steps = [
+        { id: 'receive', icon: '📥', label: '接收原始通知' },
+        { id: 'ai', icon: '🧠', label: 'AI 智能提取 (智谱 GLM-4-Flash)' },
+        { id: 'validate', icon: '✅', label: '校验必填项' }
+      ];
+
+      let stepsHtml = steps.map(s => `
+        <div class="step done">
+          <span class="step-icon">✅</span>
+          <span class="step-text">${s.label}</span>
+        </div>
+      `).join('');
+
+      const hasMissing = missing.length > 0;
+      const resultHtml = `
+        <div class="result-card">
+          <span class="label">👥 人群</span>
+          <span class="value ${result.audience === '未识别' ? 'missing' : ''}">${result.audience}</span>
+          <span class="label">⏰ 时间</span>
+          <span class="value ${result.time === '未识别' ? 'missing' : ''}">${result.time}</span>
+          <span class="label">📍 地点</span>
+          <span class="value ${result.location === '未识别' ? 'missing' : ''}">${result.location}</span>
+          <span class="label">📝 备注</span>
+          <span class="value">${result.notes || '无'}</span>
+        </div>
+        ${hasMissing ? `<div style="margin-top:6px;padding:6px 12px;background:#fef2f2;border-radius:8px;color:#991b1b;font-size:13px;border:1px solid #fecaca;">⚠️ 缺失项：${missing.join('、')}</div>` :
+          `<div style="margin-top:6px;padding:6px 12px;background:#dcfce7;border-radius:8px;color:#166534;font-size:13px;border:1px solid #bbf7d0;">✅ 所有必填项完整</div>`}
+        <div style="margin-top:8px;font-size:13px;color:#9ca3af;">⏳ 等待你确认发送...</div>
+      `;
+
+      const fullContent = `
+        <div>
+          <div style="margin-bottom:6px;font-weight:500;">📋 处理流程 ${apiKey ? '(🤖 AI模式)' : '(📝 规则模式)'}</div>
+          <div>${stepsHtml}</div>
+          ${resultHtml}
+        </div>
+      `;
+
+      session.messages[stepMsgId].content = fullContent;
+      renderMessages(session.messages);
+      saveToStorage();
+
+      // 显示 Modal
+      setTimeout(() => {
+        showModal(text, result, missing);
+        isProcessing = false;
+        document.getElementById('sendBtn').disabled = false;
+      }, 400);
+    }
+
+    function buildStepContent(type) {
+      if (type === 'initial') {
+        return `<div id="stepContainer">⏳ 处理中...</div>`;
+      }
+      return '';
+    }
+
+    // ============================================================
+    //  Modal
+    // ============================================================
+    function showModal(raw, result, missing) {
+      const hasMissing = missing && missing.length > 0;
+
+      document.getElementById('previewAudience').textContent = result.audience;
+      document.getElementById('previewAudience').className = `value ${result.audience === '未识别' ? 'missing' : ''}`;
+      document.getElementById('previewTime').textContent = result.time;
+      document.getElementById('previewTime').className = `value ${result.time === '未识别' ? 'missing' : ''}`;
+      document.getElementById('previewLocation').textContent = result.location;
+      document.getElementById('previewLocation').className = `value ${result.location === '未识别' ? 'missing' : ''}`;
+      document.getElementById('previewNotes').textContent = result.notes || '无';
+      document.getElementById('previewNotes').className = 'value';
+
+      const missingList = document.getElementById('missingList');
+      if (hasMissing) {
+        missingList.style.display = 'block';
+        missingList.innerHTML = missing.map(m => `<li>⚠️ ${m} 未识别，请确认</li>`).join('');
+        document.getElementById('modalIcon').textContent = '⚠️';
+        document.getElementById('modalTitle').textContent = '⚠️ 部分信息缺失';
+        document.getElementById('modalSub').textContent = '以下必填项未识别，你可以修改后重新提交，或继续发送（将标记为信息不全）。';
+        document.getElementById('confirmBtn').className = 'btn btn-warning';
+        document.getElementById('confirmBtn').textContent = '⚠️ 继续发送';
+      } else {
+        missingList.style.display = 'none';
+        document.getElementById('modalIcon').textContent = '📋';
+        document.getElementById('modalTitle').textContent = '✅ 信息完整，确认发送？';
+        document.getElementById('modalSub').textContent = 'AI 已提取以下信息，请核对后发送。';
+        document.getElementById('confirmBtn').className = 'btn btn-primary';
+        document.getElementById('confirmBtn').textContent = '✅ 确认发送';
+      }
+
+      pendingTask = { raw, result, missing: hasMissing ? missing : [] };
+      document.getElementById('validationModal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('validationModal').classList.remove('show');
+    }
+
+    function handleConfirm() {
+      if (!pendingTask) return;
+      const { raw, result, missing } = pendingTask;
+      const hasMissing = missing && missing.length > 0;
+      closeModal();
+
+      const session = getCurrentSession();
+      const lastIdx = session.messages.length - 1;
+      if (lastIdx >= 0 && session.messages[lastIdx].role === 'agent') {
+        let content = session.messages[lastIdx].content;
+        content = content.replace('⏳ 等待你确认发送...', hasMissing ? '⚠️ <strong>已发送</strong> (信息不全)' : '✅ <strong>已发送</strong> ✅');
+        session.messages[lastIdx].content = content;
+        renderMessages(session.messages);
+        saveToStorage();
+      }
+
+      // 保存通知
+      const isComplete = !hasMissing;
+      addNotification(session.id, { ...result, rawText: raw }, isComplete);
+
+      if (hasMissing) {
+        addMessage('agent', '⚠️ 通知已发送 (信息不全，已标记)');
+      } else {
+        addMessage('agent', '✅ 通知已成功发送！');
+      }
+
+      session.lastMessage = raw;
+      renderHistory();
+      updateCounters();
+
+      pendingTask = null;
+      document.getElementById('userInput').value = '';
+      document.getElementById('userInput').focus();
+      updateStatus('🧠 AI 已就绪', true);
+    }
+
+    function handleEdit() {
+      closeModal();
+      const session = getCurrentSession();
+      const lastIdx = session.messages.length - 1;
+      if (lastIdx >= 0 && session.messages[lastIdx].role === 'agent') {
+        let content = session.messages[lastIdx].content;
+        content = content.replace('⏳ 等待你确认发送...', '✏️ <strong>未发送</strong> · 用户选择修改');
+        session.messages[lastIdx].content = content;
+        renderMessages(session.messages);
+        saveToStorage();
+      }
+      addMessage('agent', '✏️ 已取消发送，请修改内容后重新提交。');
+      document.getElementById('userInput').focus();
+      pendingTask = null;
+    }
+
+    // ============================================================
+    //  快捷示例
+    // ============================================================
+    function fillExample(n) {
+      const examples = [
+        '明天下午3点，全体大二学生在操场集合，进行体测，请穿运动服。',
+        '下周一上午10点，全体教职工在行政楼会议室召开例会，讨论期末安排。',
+        '本周五晚上7点，大一新生在多功能厅参加迎新晚会，请提前入场。',
+        '下周三下午2点，党员在图书馆报告厅参加党课学习，请带好笔记本。'
+      ];
+      document.getElementById('userInput').value = examples[n - 1] || examples[0];
+      document.getElementById('userInput').focus();
+    }
+  </script>
+
+</body>
+
+</html>
+
+
+
+//67ef919c78cf4f78b3f1ad02ee48642c.o76POOU9BhAEr2bq
