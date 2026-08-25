@@ -1,0 +1,13 @@
+{
+  "watch": [
+    "src"
+  ],
+  "ext": "js,json",
+  "ignore": [
+    "prisma/dev.db",
+    "prisma/dev.db-journal"
+  ],
+  "env": {
+    "NODE_ENV": "development"
+  }
+}

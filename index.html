@@ -1,0 +1,1906 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>校园通知Agent · Vue3 + Element Plus</title>
+  <!-- Element Plus 样式 -->
+  <link rel="stylesheet" href="https://unpkg.com/element-plus@2.9.3/dist/index.css" />
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3.5.13/dist/vue.global.prod.js"></script>
+  <!-- Element Plus 组件库 -->
+  <script src="https://unpkg.com/element-plus@2.9.3/dist/index.full.min.js"></script>
+  <!-- Element Plus 图标 -->
+  <script src="https://unpkg.com/@element-plus/icons-vue@2.3.1/dist/index.iife.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body,
+    #app {
+      height: 100%;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: #eef0f3;
+      color: #1f2937;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app-shell {
+      display: flex;
+      height: 100vh;
+      height: 100dvh;
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      background: #fff;
+      box-shadow: 0 0 40px rgba(15, 23, 42, 0.08);
+    }
+
+    /* ===== 侧边栏 ===== */
+    .sidebar {
+      width: 280px;
+      min-width: 280px;
+      border-right: 1px solid #e5e7eb;
+      background: #fafbfc;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-inner {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid #e5e7eb;
+      flex-shrink: 0;
+    }
+
+    .logo-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .logo-icon {
+      width: 30px;
+      height: 30px;
+      background: #1f2937;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      font-size: 17px;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      line-height: 1;
+      transition: 0.15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-btn:hover {
+      background: #e5e7eb;
+      color: #1f2937;
+    }
+
+    .new-chat-btn,
+    .nc-entry-btn {
+      margin: 10px 14px 2px;
+      border-radius: 10px;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .nc-entry-btn .nc-badge {
+      margin-left: 6px;
+    }
+
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px 2px;
+      flex-shrink: 0;
+    }
+
+    .filter-bar .filter-count {
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .history-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px 4px;
+      flex-shrink: 0;
+    }
+
+    .history-head .label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #9ca3af;
+      letter-spacing: 0.5px;
+    }
+
+    .history-head .count {
+      font-size: 11px;
+      color: #9ca3af;
+      background: #e5e7eb;
+      padding: 0 8px;
+      border-radius: 10px;
+    }
+
+    .history-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 8px 8px;
+      min-height: 0;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 2px;
+      border: 1px solid transparent;
+      transition: 0.15s;
+      position: relative;
+    }
+
+    .history-item:hover {
+      background: #eef0f3;
+    }
+
+    .history-item.active {
+      background: #e5e7eb;
+      border-color: #d1d5db;
+    }
+
+    .history-item.pinned {
+      background: #fffbeb;
+      border-left: 3px solid #d97706;
+    }
+
+    .history-item .h-icon {
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .history-item .h-text {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .history-item .h-status {
+      font-size: 10px;
+      padding: 1px 8px;
+      border-radius: 12px;
+      background: #e5e7eb;
+      color: #6b7280;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .history-item .h-status.sent {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .history-item .h-status.inc {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .history-item .h-actions {
+      display: none;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .history-item:hover .h-actions {
+      display: flex;
+    }
+
+    .history-item .h-actions button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #9ca3af;
+      line-height: 1;
+    }
+
+    .history-item .h-actions button:hover {
+      background: #d1d5db;
+    }
+
+    .history-item .h-actions .pin-btn.pinned {
+      color: #d97706;
+    }
+
+    .history-item .h-actions .del-btn:hover {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .user-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-top: 1px solid #e5e7eb;
+      flex-shrink: 0;
+    }
+
+    .user-bar .u-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #1f2937;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .user-bar .u-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .user-bar .u-name {
+      font-size: 13.5px;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-bar .u-sub {
+      font-size: 11.5px;
+      color: #9ca3af;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-bar .u-logout {
+      background: none;
+      border: none;
+      font-size: 17px;
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 5px 7px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .user-bar .u-logout:hover {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .admin-entry {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 14px;
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      color: #475569;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: 0.15s;
+      flex-shrink: 0;
+    }
+
+    .admin-entry:hover {
+      border-color: #1d4ed8;
+      color: #1d4ed8;
+      background: #eff6ff;
+    }
+
+    .admin-entry .admin-entry-arrow {
+      margin-left: auto;
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    .sidebar-inner .footer {
+      border-top: 1px solid #e5e7eb;
+      padding: 8px 14px;
+      font-size: 11.5px;
+      color: #9ca3af;
+      display: flex;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .sidebar-inner .footer .clear-all {
+      background: none;
+      border: none;
+      color: #9ca3af;
+      font-size: 11.5px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .sidebar-inner .footer .clear-all:hover {
+      color: #dc2626;
+    }
+
+    /* ===== 主区域 ===== */
+    .main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+      background: #fff;
+    }
+
+    .topbar {
+      height: 56px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 16px;
+      border-bottom: 1px solid #e5e7eb;
+      background: #fff;
+      position: relative;
+      z-index: 5;
+    }
+
+    .topbar .hamburger {
+      font-size: 20px;
+      color: #111827;
+      /* 黑色三条杠 */
+    }
+
+    .top-title {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+    }
+
+    .top-title .tt-icon {
+      font-size: 18px;
+    }
+
+    .top-title .tt-main {
+      font-size: 15.5px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .top-title .tt-sub {
+      font-size: 13px;
+      color: #9ca3af;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .status-pill {
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: #ede9fe;
+      color: #5b21b6;
+      white-space: nowrap;
+    }
+
+    /* ===== 消息区 ===== */
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 22px;
+      background: #f7f8fa;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .msg-row {
+      display: flex;
+      gap: 10px;
+      max-width: 76%;
+      animation: fadeUp 0.25s ease;
+    }
+
+    .msg-row.user {
+      align-self: flex-end;
+      /* DOM 顺序为 [气泡, 头像]，保持默认 row 方向 → 头像在右侧 */
+    }
+
+    .msg-row.agent {
+      align-self: flex-start;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .avatar.agent {
+      background: #e5e7eb;
+    }
+
+    .avatar.user {
+      background: #dbeafe;
+    }
+
+    .bubble {
+      padding: 11px 16px;
+      border-radius: 16px;
+      font-size: 14.5px;
+      line-height: 1.65;
+      word-break: break-word;
+      min-width: 0;
+    }
+
+    .bubble.user {
+      background: #2563eb;
+      color: #fff;
+      border-bottom-right-radius: 5px;
+    }
+
+    .bubble.agent {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+      border-bottom-left-radius: 5px;
+    }
+
+    /* typing 动画 */
+    .bubble.typing {
+      display: inline-flex;
+      gap: 5px;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .bubble.typing .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #9ca3af;
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+
+    .bubble.typing .dot:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    .bubble.typing .dot:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      80%,
+      100% {
+        transform: translateY(0);
+        opacity: 0.4;
+      }
+
+      40% {
+        transform: translateY(-5px);
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeUp {
+      0% {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* 提取结果卡片 */
+    .result-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 4px 14px;
+      font-size: 13.5px;
+      background: #f8fafc;
+      border: 1px solid #eef2f7;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-top: 8px;
+    }
+
+    .result-grid .r-label {
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+
+    .result-grid .r-value {
+      font-weight: 500;
+      word-break: break-word;
+    }
+
+    .result-grid .r-value.miss {
+      color: #dc2626;
+      font-weight: 600;
+    }
+
+    .missing-warn {
+      margin-top: 8px;
+      padding: 6px 10px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .ok-warn {
+      margin-top: 8px;
+      padding: 6px 10px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #15803d;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .result-status {
+      margin-top: 10px;
+    }
+
+    /* ===== 输入区 ===== */
+    .input-area {
+      flex-shrink: 0;
+      border-top: 1px solid #e5e7eb;
+      padding: 12px 18px 14px;
+      background: #fff;
+    }
+
+    .input-wrap {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .input-wrap .el-input__wrapper {
+      border-radius: 22px;
+      padding-left: 18px;
+      padding-right: 18px;
+    }
+
+    .input-wrap .send-btn {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+    }
+
+    .shortcuts {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .shortcuts .chip {
+      cursor: pointer;
+      border-radius: 16px;
+      transition: 0.15s;
+    }
+
+    .shortcuts .chip:hover {
+      opacity: 0.8;
+    }
+
+    /* ===== 通知中心 ===== */
+    .nc {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .nc-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 4px 12px;
+      flex-shrink: 0;
+    }
+
+    .nc-title {
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .nc-tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid #e5e7eb;
+      flex-shrink: 0;
+    }
+
+    .nc-tabs button {
+      flex: 1;
+      padding: 10px 8px;
+      border: none;
+      background: none;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: #6b7280;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: 0.15s;
+      white-space: nowrap;
+    }
+
+    .nc-tabs button.active {
+      color: #1f2937;
+      border-bottom-color: #1f2937;
+    }
+
+    .nc-tabs .nc-badge {
+      background: #dc2626;
+      color: #fff;
+      font-size: 10px;
+      padding: 1px 7px;
+      border-radius: 10px;
+      margin-left: 3px;
+    }
+
+    .nc-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 2px 8px;
+      min-height: 0;
+    }
+
+    .nc-item {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: 0.15s;
+      background: #fff;
+    }
+
+    .nc-item:hover {
+      border-color: #cbd5e1;
+      background: #fafbfc;
+    }
+
+    .nc-item.unread {
+      background: #fffbeb;
+      border-color: #fde68a;
+    }
+
+    .nc-item-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .nc-item-title {
+      font-size: 14.5px;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .nc-item-meta {
+      font-size: 12px;
+      color: #6b7280;
+      margin: 2px 0;
+      word-break: break-word;
+    }
+
+    .nc-item-dot {
+      font-size: 11.5px;
+      color: #b45309;
+      white-space: nowrap;
+    }
+
+    .nc-item-dot.read {
+      color: #9ca3af;
+    }
+
+    .nc-item-body {
+      font-size: 13px;
+      color: #4b5563;
+      margin-top: 6px;
+      line-height: 1.6;
+      background: #f8fafc;
+      border-radius: 8px;
+      padding: 8px 10px;
+      word-break: break-word;
+      max-height: 120px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+    }
+
+    .nc-read {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .nc-read-bar {
+      flex: 1;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .nc-read-fill {
+      display: block;
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .nc-read-fill.full {
+      background: #22c55e;
+    }
+
+    .nc-read-fill.partial {
+      background: #f59e0b;
+    }
+
+    .nc-read-fill.none {
+      background: #94a3b8;
+    }
+
+    .nc-read-count {
+      font-size: 11.5px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .nc-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      justify-content: flex-end;
+    }
+
+    /* ===== 弹窗辅助 ===== */
+    .dlg-sub {
+      color: #64748b;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .dlg-hint {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 4px;
+      padding: 10px 12px;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e9edf2;
+      line-height: 1.7;
+    }
+
+    /* 抽屉样式微调 */
+    .side-drawer .el-drawer__body {
+      padding: 0;
+    }
+
+    .el-drawer__body {
+      overflow: hidden;
+    }
+
+    /* ===== 移动端 ===== */
+    @media (max-width: 768px) {
+      .app-shell {
+        max-width: 100%;
+      }
+
+      .topbar {
+        height: 52px;
+        padding: 0 10px;
+      }
+
+      .top-title .tt-sub {
+        display: none;
+      }
+
+      .status-pill {
+        display: none;
+      }
+
+      .messages {
+        padding: 14px 12px;
+      }
+
+      .msg-row {
+        max-width: 92%;
+      }
+
+      .bubble {
+        font-size: 14px;
+      }
+
+      .input-area {
+        padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0px));
+      }
+
+      .shortcuts {
+        margin-top: 8px;
+      }
+
+      .shortcuts .chip {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <el-config-provider :locale="zhCn">
+      <div class="app-shell">
+        <!-- ===== 桌面侧边栏 ===== -->
+        <aside class="sidebar" v-if="!state.isMobile">
+          <sidebar-inner></sidebar-inner>
+        </aside>
+
+        <!-- ===== 主区域 ===== -->
+        <div class="main">
+          <header class="topbar">
+            <button v-if="state.isMobile" class="icon-btn hamburger" @click="state.sidebarDrawer = true">
+              <el-icon>
+                <Menu></Menu>
+              </el-icon>
+            </button>
+            <div class="top-title">
+              <span class="tt-icon">🏫</span>
+              <span class="tt-main">校园通知Agent</span>
+              <span class="tt-sub" v-if="currentSession">· {{ currentSession.title }}</span>
+            </div>
+            <div class="top-actions">
+              <el-badge :value="state.unreadCount" :hidden="!state.unreadCount" :max="99">
+                <el-button circle @click="openNc()">
+                  <el-icon>
+                    <Bell></Bell>
+                  </el-icon>
+                </el-button>
+              </el-badge>
+              <span class="status-pill">🧠 AI 就绪</span>
+            </div>
+          </header>
+
+          <!-- 消息区 -->
+          <main class="messages" ref="messagesRef">
+            <template v-for="msg in currentMessages" :key="msg.id">
+              <!-- 用户消息 -->
+              <div v-if="msg.role === 'user'" class="msg-row user">
+                <div class="bubble user">{{ msg.content }}</div>
+                <div class="avatar user">👤</div>
+              </div>
+              <!-- AI 文本消息 -->
+              <div v-else-if="msg.type === 'text'" class="msg-row agent">
+                <div class="avatar agent">🤖</div>
+                <div class="bubble agent" v-html="msg.content"></div>
+              </div>
+              <!-- AI 输入中 -->
+              <div v-else-if="msg.type === 'typing'" class="msg-row agent">
+                <div class="avatar agent">🤖</div>
+                <div class="bubble agent typing">
+                  <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                </div>
+              </div>
+              <!-- AI 提取结果 -->
+              <div v-else-if="msg.type === 'result'" class="msg-row agent">
+                <div class="avatar agent">🤖</div>
+                <div class="bubble agent">
+                  <div class="result-title">
+                    📋 提取结果
+                    <el-tag size="small" :type="msg.source === 'ai' ? 'primary' : 'info'" effect="plain">
+                      {{ msg.source === 'ai' ? '🤖 AI 提取' : '📝 规则提取' }}
+                    </el-tag>
+                  </div>
+                  <div class="result-grid">
+                    <span class="r-label">👥 人群</span>
+                    <span class="r-value" :class="{ miss: msg.extraction.audience === '未识别' }">{{
+                      msg.extraction.audience }}</span>
+                    <span class="r-label">⏰ 时间</span>
+                    <span class="r-value" :class="{ miss: msg.extraction.time === '未识别' }">{{ msg.extraction.time
+                      }}</span>
+                    <span class="r-label">📍 地点</span>
+                    <span class="r-value" :class="{ miss: msg.extraction.location === '未识别' }">{{
+                      msg.extraction.location }}</span>
+                    <span class="r-label">📝 备注</span>
+                    <span class="r-value">{{ msg.extraction.notes || '无' }}</span>
+                  </div>
+                  <div v-if="msg.missing && msg.missing.length" class="missing-warn">⚠️ 缺失项：{{ msg.missing.join('、') }}
+                  </div>
+                  <div v-else class="ok-warn">✅ 所有必填项完整</div>
+
+                  <!-- 操作按钮 -->
+                  <div v-if="canSend(msg)" class="result-actions">
+                    <el-button size="small" @click="saveDraft(msg)">📝 存草稿</el-button>
+                    <el-button size="small" @click="openEdit(msg)">✏️ 修改</el-button>
+                    <el-button size="small" :type="msg.missing && msg.missing.length ? 'warning' : 'primary'"
+                      @click="confirmSend(msg)">
+                      {{ msg.missing && msg.missing.length ? '⚠️ 继续发送' : '✅ 确认发送' }}
+                    </el-button>
+                  </div>
+                  <!-- 发送结果状态 -->
+                  <div v-else class="result-status">
+                    <el-tag v-if="msg.status === 'sent'" type="success" effect="dark">✅ 已发送 → {{ msg.audienceResolved
+                      }}（{{ msg.recipientCount }} 人）</el-tag>
+                    <el-tag v-else-if="msg.status === 'draft'" type="warning" effect="dark">📝 已存草稿</el-tag>
+                    <el-tag v-else-if="msg.status === 'failed'" type="danger" effect="dark">❌ {{ msg.error }}</el-tag>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </main>
+
+          <!-- 输入区 -->
+          <footer class="input-area">
+            <div class="input-wrap">
+              <el-input v-model="state.inputText" placeholder="输入通知内容，Enter 发送…" :disabled="state.isProcessing"
+                clearable @keyup.enter="handleSend()"></el-input>
+              <el-button type="primary" circle class="send-btn" :loading="state.isProcessing"
+                :disabled="!state.inputText.trim()" @click="handleSend()">
+                <el-icon v-if="!state.isProcessing">
+                  <Promotion></Promotion>
+                </el-icon>
+              </el-button>
+            </div>
+            <div class="shortcuts">
+              <el-tag v-for="(ex, i) in examples" :key="i" class="chip" effect="plain" @click="fillExample(i)">{{
+                ex.label }}</el-tag>
+            </div>
+          </footer>
+        </div>
+
+        <!-- ===== 移动端侧边栏抽屉 ===== -->
+        <el-drawer v-model="state.sidebarDrawer" direction="ltr" size="82%" :with-header="false" class="side-drawer">
+          <sidebar-inner></sidebar-inner>
+        </el-drawer>
+
+        <!-- ===== 通知中心抽屉 ===== -->
+        <el-drawer v-model="state.ncVisible" direction="rtl" :size="ncDrawerSize" :with-header="false">
+          <notification-center></notification-center>
+        </el-drawer>
+
+        <!-- ===== 登录对话框 ===== -->
+        <el-dialog v-model="state.loginVisible" title="🏫 校园通知系统" :width="state.isMobile ? '92%' : '380px'"
+          :close-on-click-modal="false" align-center>
+          <p class="dlg-sub">登录后即可收发通知</p>
+          <el-form label-position="top" @submit.prevent>
+            <el-form-item label="学号 / 工号">
+              <el-input v-model="state.loginForm.studentId" placeholder="请输入学号或工号" @keyup.enter="doLogin()"></el-input>
+            </el-form-item>
+            <el-form-item label="密码">
+              <el-input v-model="state.loginForm.password" type="password" show-password placeholder="请输入密码"
+                @keyup.enter="doLogin()"></el-input>
+            </el-form-item>
+          </el-form>
+          <div class="dlg-hint">
+            💡 演示账号：教师 <b>T001</b> · 学生 <b>2025001</b>，密码默认 <b>123456</b><br />
+            🔐 管理员账号登录后自动跳转后台管理端
+          </div>
+          <template #footer>
+            <el-button type="primary" :loading="state.loginLoading" @click="doLogin()">🔑 登录</el-button>
+          </template>
+        </el-dialog>
+
+        <!-- ===== 修改提取信息对话框 ===== -->
+        <el-dialog v-model="state.editVisible" title="✏️ 修改提取信息" :width="state.isMobile ? '92%' : '420px'" align-center>
+          <el-form label-position="top">
+            <el-form-item label="👥 目标人群"><el-input v-model="state.editForm.audience"></el-input></el-form-item>
+            <el-form-item label="⏰ 时间"><el-input v-model="state.editForm.time"></el-input></el-form-item>
+            <el-form-item label="📍 地点"><el-input v-model="state.editForm.location"></el-input></el-form-item>
+            <el-form-item label="📝 备注"><el-input v-model="state.editForm.notes"></el-input></el-form-item>
+          </el-form>
+          <template #footer>
+            <el-button @click="state.editVisible = false">取消</el-button>
+            <el-button type="primary" @click="saveEdit()">保存</el-button>
+          </template>
+        </el-dialog>
+      </div>
+    </el-config-provider>
+  </div>
+
+  <script>
+    // ============================================================
+    //  校园通知Agent · Vue3 + Element Plus
+    // ============================================================
+    const { createApp, reactive, computed, nextTick, ref } = Vue;
+    const ElMessage = ElementPlus.ElMessage;
+    const ElMessageBox = ElementPlus.ElMessageBox;
+    const zhCn = (typeof ElementPlus !== 'undefined' && ElementPlus.zhCn) ? ElementPlus.zhCn : undefined;
+
+    const API = 'http://localhost:3001/api';
+    const STORAGE_KEY = 'sessions_vue_v1';
+    const USER_KEY = 'campus_user';
+
+    // ============================================================
+    //  全局状态
+    // ============================================================
+    const state = reactive({
+      currentUser: JSON.parse(localStorage.getItem(USER_KEY) || 'null'),
+      sessions: [],
+      currentSessionId: null,
+      inputText: '',
+      isProcessing: false,
+      filterIncomplete: false,
+      sidebarDrawer: false,
+      ncVisible: false,
+      ncTab: 'inbox',
+      ncList: [],
+      ncLoading: false,
+      loginVisible: false,
+      loginLoading: false,
+      loginForm: { studentId: '', password: '' },
+      editVisible: false,
+      editForm: { audience: '', time: '', location: '', notes: '' },
+      editTarget: null,
+      unreadCount: 0,
+      isMobile: window.innerWidth < 768,
+    });
+
+    // ============================================================
+    //  工具函数
+    // ============================================================
+    async function api(method, path, body) {
+      const res = await fetch(API + path, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const data = await res.json().catch(() => ({}));
+      return { status: res.status, data };
+    }
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    function shortTime(t) {
+      if (!t) return '';
+      const d = new Date(t);
+      const p = n => String(n).padStart(2, '0');
+      return `${d.getMonth() + 1}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+    }
+
+    function genId() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    }
+
+    // ============================================================
+    //  存储（localStorage）
+    // ============================================================
+    function loadSessions() {
+      try {
+        state.sessions = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      } catch (e) {
+        state.sessions = [];
+      }
+      state.sessions.forEach(s => {
+        if (!Array.isArray(s.messages)) s.messages = [];
+        s.pinned = !!s.pinned;
+        s.hasIncomplete = s.messages.some(m => m.type === 'result' && m.status === 'sent' && m.missing && m.missing.length);
+      });
+    }
+
+    function saveSessions() {
+      state.sessions.forEach(s => {
+        s.hasIncomplete = s.messages.some(m => m.type === 'result' && m.status === 'sent' && m.missing && m.missing.length);
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.sessions));
+    }
+
+    // ============================================================
+    //  会话管理
+    // ============================================================
+    const welcomeHtml =
+      '👋 你好！我是校园通知助手。<br>' +
+      '输入通知内容，AI 会自动提取 <b>人群 / 时间 / 地点</b> 并让你确认。<br>' +
+      '<span style="color:#909399;font-size:13px;">💡 试试：明天下午3点，全体大二学生在操场集合</span>';
+
+    function welcomeSession() {
+      return {
+        id: genId(),
+        title: '新对话',
+        createdAt: new Date().toISOString(),
+        pinned: false,
+        hasIncomplete: false,
+        lastMessage: '',
+        messages: [{ id: genId(), role: 'agent', type: 'text', content: welcomeHtml, time: new Date().toISOString() }],
+      };
+    }
+
+    const currentSession = computed(() =>
+      state.sessions.find(s => s.id === state.currentSessionId) || null
+    );
+
+    const currentMessages = computed(() =>
+      currentSession.value ? currentSession.value.messages : []
+    );
+
+    const filteredSessions = computed(() => {
+      let list = state.sessions.slice();
+      if (state.filterIncomplete) list = list.filter(s => s.hasIncomplete);
+      list.sort((a, b) => {
+        if (a.pinned && !b.pinned) return -1;
+        if (!a.pinned && b.pinned) return 1;
+        return String(b.createdAt).localeCompare(String(a.createdAt));
+      });
+      return list;
+    });
+
+    const incompleteCount = computed(() =>
+      state.sessions.filter(s => s.hasIncomplete).length
+    );
+
+    function currentSessionObj() {
+      return state.sessions.find(s => s.id === state.currentSessionId) || null;
+    }
+
+    function newChat() {
+      const s = welcomeSession();
+      state.sessions.push(s);
+      state.currentSessionId = s.id;
+      state.sidebarDrawer = false; // 移动端：从抽屉发起新对话后自动收起
+      saveSessions();
+      scrollToBottom();
+    }
+
+    function switchSession(id) {
+      if (id === state.currentSessionId) return;
+      state.currentSessionId = id;
+      state.sidebarDrawer = false;
+      scrollToBottom();
+    }
+
+    function togglePin(id) {
+      const s = state.sessions.find(x => x.id === id);
+      if (s) {
+        s.pinned = !s.pinned;
+        saveSessions();
+      }
+    }
+
+    async function confirmDeleteSession(s) {
+      try {
+        await ElMessageBox.confirm(`确定删除对话「${s.title}」吗？此操作不可撤销。`, '删除对话', {
+          type: 'warning',
+          confirmButtonText: '删除',
+          cancelButtonText: '取消',
+          confirmButtonClass: 'el-button--danger',
+        });
+      } catch (e) {
+        return;
+      }
+      const i = state.sessions.indexOf(s);
+      if (i === -1) return;
+      const isCurrent = state.currentSessionId === s.id;
+      state.sessions.splice(i, 1);
+      if (isCurrent || state.sessions.length === 0) {
+        if (state.sessions.length > 0) {
+          state.currentSessionId = state.sessions[0].id;
+        } else {
+          const ns = welcomeSession();
+          state.sessions.push(ns);
+          state.currentSessionId = ns.id;
+        }
+      }
+      saveSessions();
+      scrollToBottom();
+    }
+
+    function clearAll() {
+      if (state.sessions.length === 0) return;
+      ElMessageBox.confirm('确定要清空所有对话吗？此操作不可撤销。', '清空对话', {
+        type: 'warning',
+        confirmButtonText: '清空',
+        cancelButtonText: '取消',
+      }).then(() => {
+        state.sessions = [];
+        const ns = welcomeSession();
+        state.sessions.push(ns);
+        state.currentSessionId = ns.id;
+        saveSessions();
+        scrollToBottom();
+      }).catch(() => { });
+    }
+
+    // ============================================================
+    //  规则提取（降级方案，AI 不可用时使用）
+    // ============================================================
+    function extractInfoRule(text) {
+      let audience = '未识别';
+      let time = '未识别';
+      let location = '未识别';
+      let notes = '无';
+
+      const gradeMap = {
+        '大一': '大一新生',
+        '大二': '大二学生',
+        '大三': '大三学生',
+        '大四': '大四毕业生',
+        '全体': '全体师生',
+        '老师': '全体教职工',
+        '党员': '全体党员',
+        '研究生': '研究生'
+      };
+      for (const [key, val] of Object.entries(gradeMap)) {
+        if (text.includes(key)) { audience = val; break; }
+      }
+      if (audience === '未识别') {
+        const match = text.match(/([\u4e00-\u9fa5]{1,4}(?:班|级))/);
+        if (match) audience = match[1];
+      }
+
+      const timeRegex = /(明天|后天|下[周一二三四五六日]|[0-9]{1,2}[:：][0-9]{2}|[0-9]{1,2}点|[上中下]午[0-9]{1,2}点)/;
+      const found = text.match(timeRegex);
+      if (found) time = found[0];
+
+      const locationRegex = /(?:在|于|前往|到)\s*([\u4e00-\u9fa5a-zA-Z0-9]{1,12}(?:教室|楼|厅|场|馆|室|办|中心|操场|广场|楼前|楼下|报告厅|会议室|堂|园|馆|院|处|科))/;
+      const locMatch = text.match(locationRegex);
+      if (locMatch) location = locMatch[1];
+
+      let remaining = text;
+      if (locMatch) remaining = remaining.replace(locMatch[0], '');
+      if (found) remaining = remaining.replace(found[0], '');
+      for (const key of Object.keys(gradeMap)) {
+        remaining = remaining.replace(key, '');
+      }
+      const cleanRemaining = remaining.replace(/[，,。、\s]+/g, ' ').trim();
+      if (cleanRemaining.length > 2 && cleanRemaining.length < 50) {
+        notes = cleanRemaining;
+      }
+
+      return { audience, time, location, notes };
+    }
+
+    function validateFields(data) {
+      const required = ['audience', 'time', 'location'];
+      const missing = [];
+      const labels = { audience: '目标人群', time: '时间', location: '地点' };
+      for (const field of required) {
+        if (!data[field] || data[field] === '未识别') {
+          missing.push(labels[field]);
+        }
+      }
+      return missing;
+    }
+
+    // ============================================================
+    //  核心发送流程（对话式）
+    // ============================================================
+    const messagesRef = ref(null);
+
+    async function scrollToBottom() {
+      await nextTick();
+      const el = messagesRef.value;
+      if (el) el.scrollTop = el.scrollHeight;
+    }
+
+    async function handleSend() {
+      const text = state.inputText.trim();
+      if (!text || state.isProcessing) return;
+      if (!state.currentUser) {
+        openLogin();
+        return;
+      }
+      state.isProcessing = true;
+
+      const session = currentSessionObj();
+      if (!session) return;
+
+      // 用户消息
+      session.messages.push({ id: genId(), role: 'user', content: text, time: new Date().toISOString() });
+
+      // 输入中气泡
+      const typingId = genId();
+      session.messages.push({ id: typingId, role: 'agent', type: 'typing' });
+
+      // 首条消息作为会话标题
+      const userCount = session.messages.filter(m => m.role === 'user').length;
+      if (userCount === 1) {
+        session.title = text.replace(/<[^>]*>/g, '').slice(0, 18) + (text.length > 18 ? '…' : '');
+      }
+
+      state.inputText = '';
+      saveSessions();
+      scrollToBottom();
+
+      // AI 提取（后端）
+      let extraction = null;
+      let source = 'ai';
+      try {
+        const r = await api('POST', '/ai/extract', { text });
+        if (r.status === 200 && r.data.result) {
+          extraction = r.data.result;
+          source = r.data.source || 'ai';
+        } else {
+          throw new Error(r.data.error || '提取失败');
+        }
+      } catch (e) {
+        source = 'rule';
+        extraction = extractInfoRule(text);
+      }
+
+      const missing = validateFields(extraction);
+
+      // 替换输入中气泡为提取结果
+      const idx = session.messages.findIndex(m => m.id === typingId);
+      if (idx !== -1) {
+        session.messages[idx] = {
+          id: typingId,
+          role: 'agent',
+          type: 'result',
+          extraction,
+          source,
+          missing,
+          rawText: text,
+          status: 'pending',
+          time: new Date().toISOString(),
+        };
+      }
+
+      state.isProcessing = false;
+      saveSessions();
+      scrollToBottom();
+    }
+
+    function canSend(msg) {
+      return msg.status === 'pending' || msg.status === 'edited';
+    }
+
+    function buildPayload(extraction, rawText, isDraft) {
+      const clean = s => String(s || '').replace(/<[^>]*>/g, '');
+      return {
+        senderId: state.currentUser.id,
+        title: clean(rawText).slice(0, 30) || '校园通知',
+        content: rawText,
+        audience: extraction.audience === '未识别' ? '全体师生' : extraction.audience,
+        location: (extraction.location && extraction.location !== '未识别') ? extraction.location : null,
+        eventTime: (extraction.time && extraction.time !== '未识别') ? extraction.time : null,
+        notes: (extraction.notes && extraction.notes !== '无' && extraction.notes !== '未识别') ? extraction.notes : null,
+        ...(isDraft ? { status: 'draft' } : {}),
+      };
+    }
+
+    async function confirmSend(msg) {
+      if (!state.currentUser) { openLogin(); return; }
+      const session = currentSessionObj();
+      const payload = buildPayload(msg.extraction, msg.rawText, false);
+      const r = await api('POST', '/notifications', payload);
+      if (r.status < 300) {
+        msg.status = 'sent';
+        msg.audienceResolved = r.data.audience;
+        msg.recipientCount = r.data.recipientCount;
+        if (session) session.lastMessage = msg.rawText || '';
+        saveSessions();
+        ElMessage.success(`已发送 → ${r.data.audience}（${r.data.recipientCount} 人）`);
+      } else {
+        msg.status = 'failed';
+        msg.error = r.data.error || '发送失败';
+        saveSessions();
+        ElMessage.error(msg.error);
+      }
+    }
+
+    async function saveDraft(msg) {
+      if (!state.currentUser) { openLogin(); return; }
+      const session = currentSessionObj();
+      const payload = buildPayload(msg.extraction, msg.rawText, true);
+      const r = await api('POST', '/notifications', payload);
+      if (r.status < 300) {
+        msg.status = 'draft';
+        if (session) session.lastMessage = msg.rawText || '';
+        saveSessions();
+        ElMessage.success('草稿已保存，可到「通知中心 → 草稿箱」发送');
+      } else {
+        ElMessage.error(r.data.error || '草稿保存失败');
+      }
+    }
+
+    function openEdit(msg) {
+      state.editTarget = msg;
+      state.editForm = {
+        audience: msg.extraction.audience,
+        time: msg.extraction.time,
+        location: msg.extraction.location,
+        notes: msg.extraction.notes || '',
+      };
+      state.editVisible = true;
+    }
+
+    function saveEdit() {
+      const msg = state.editTarget;
+      if (!msg) return;
+      msg.extraction = {
+        audience: state.editForm.audience.trim(),
+        time: state.editForm.time.trim(),
+        location: state.editForm.location.trim(),
+        notes: state.editForm.notes.trim(),
+      };
+      msg.missing = validateFields(msg.extraction);
+      msg.status = 'edited';
+      state.editVisible = false;
+      saveSessions();
+      ElMessage.success('已修改，请再次确认发送');
+    }
+
+    // ============================================================
+    //  登录 / 退出
+    // ============================================================
+    function openLogin() {
+      state.loginVisible = true;
+      if (!state.currentUser) {
+        setTimeout(() => {
+          const dlg = Array.from(document.querySelectorAll('.el-dialog')).find(d => getComputedStyle(d).display !== 'none');
+          const el = dlg ? dlg.querySelector('input') : null;
+          if (el) el.focus();
+        }, 150);
+      }
+    }
+
+    async function doLogin() {
+      const { studentId, password } = state.loginForm;
+      if (!studentId || !password) {
+        ElMessage.warning('请输入学号和密码');
+        return;
+      }
+      state.loginLoading = true;
+      try {
+        const r = await api('POST', '/auth/login', { studentId, password });
+        if (r.status < 300 && r.data.user) {
+          state.currentUser = r.data.user;
+          localStorage.setItem(USER_KEY, JSON.stringify(state.currentUser));
+          state.loginVisible = false;
+          state.loginForm = { studentId: '', password: '' };
+          ElMessage.success(`欢迎，${r.data.user.name}`);
+          if (r.data.admin) {
+            sessionStorage.setItem('admin_token', r.data.adminToken);
+            sessionStorage.setItem('admin_level', String(r.data.adminLevel || 2));
+            sessionStorage.setItem('admin_info', JSON.stringify(r.data.user));
+            window.location.href = 'admin.html';
+            return;
+          }
+        } else {
+          ElMessage.error(r.data.error || '登录失败');
+        }
+      } catch (e) {
+        ElMessage.error('无法连接后端服务：' + e.message);
+      } finally {
+        state.loginLoading = false;
+      }
+    }
+
+    function logout() {
+      state.currentUser = null;
+      state.unreadCount = 0;
+      localStorage.removeItem(USER_KEY);
+      state.loginForm = { studentId: '', password: '' };
+      openLogin();
+    }
+
+    // ============================================================
+    //  通知中心
+    // ============================================================
+    const ncDrawerSize = computed(() => state.isMobile ? '100%' : '440px');
+
+    async function openNc() {
+      if (!state.currentUser) { openLogin(); return; }
+      state.ncTab = 'inbox';
+      state.sidebarDrawer = false; // 移动端：从抽屉进入通知中心后自动收起
+      state.ncVisible = true;
+      await loadNc();
+    }
+
+    async function loadNc() {
+      if (!state.currentUser) return;
+      state.ncLoading = true;
+      try {
+        if (state.ncTab === 'inbox') {
+          const r = await api('GET', `/notifications/received?userId=${state.currentUser.id}`);
+          state.ncList = Array.isArray(r.data) ? r.data : [];
+          state.unreadCount = state.ncList.filter(n => !n.isRead).length;
+        } else {
+          const r = await api('GET', `/notifications/sent?userId=${state.currentUser.id}`);
+          const all = Array.isArray(r.data) ? r.data : [];
+          state.ncList = state.ncTab === 'sent'
+            ? all.filter(n => n.status !== 'draft')
+            : all.filter(n => n.status === 'draft');
+        }
+      } catch (e) {
+        state.ncList = [];
+      }
+      state.ncLoading = false;
+    }
+
+    function switchNcTab(tab) {
+      state.ncTab = tab;
+      loadNc();
+    }
+
+    async function markRead(n) {
+      if (n.isRead) return;
+      await api('PATCH', `/notifications/${n.id}/read`, { userId: state.currentUser.id });
+      n.isRead = true;
+      state.unreadCount = Math.max(0, state.unreadCount - 1);
+    }
+
+    async function removeInbox(n) {
+      const r = await api('DELETE', `/notifications/${n.id}/recipient`, { userId: state.currentUser.id });
+      if (r.data.ok) {
+        state.ncList = state.ncList.filter(x => x.id !== n.id);
+        ElMessage.success('已从收件箱移除');
+      } else {
+        ElMessage.error(r.data.error || '移除失败');
+      }
+    }
+
+    async function sendDraft(n) {
+      const r = await api('PATCH', `/notifications/${n.id}/send`, { userId: state.currentUser.id });
+      if (r.status < 300) {
+        ElMessage.success(`已发送 → ${r.data.audience}（${r.data.recipientCount} 人）`);
+        loadNc();
+      } else {
+        ElMessage.error(r.data.error || '发送失败');
+      }
+    }
+
+    async function delNotification(n) {
+      try {
+        await ElMessageBox.confirm(`确定删除通知「${n.title}」吗？此操作不可撤销。`, '删除通知', {
+          type: 'warning',
+          confirmButtonText: '删除',
+          cancelButtonText: '取消',
+        });
+      } catch (e) {
+        return;
+      }
+      const r = await api('DELETE', `/notifications/${n.id}`);
+      if (r.data.ok) {
+        state.ncList = state.ncList.filter(x => x.id !== n.id);
+        ElMessage.success('已删除');
+      } else {
+        ElMessage.error(r.data.error || '删除失败');
+      }
+    }
+
+    function readPct(n) {
+      const t = n.recipientCount || 0;
+      const r = n.readCount || 0;
+      return t > 0 ? Math.round((r / t) * 100) : 0;
+    }
+
+    function readState(n) {
+      const t = n.recipientCount || 0;
+      const r = n.readCount || 0;
+      return (t > 0 && r >= t) ? 'full' : (r > 0 ? 'partial' : 'none');
+    }
+
+    // ============================================================
+    //  组件：侧边栏
+    // ============================================================
+    const SidebarInner = {
+      name: 'SidebarInner',
+      setup() {
+        return {
+          state, filteredSessions, incompleteCount,
+          newChat, switchSession, togglePin, confirmDeleteSession,
+          clearAll, openNc, logout, openLogin,
+        };
+      },
+      template: `
+        <div class="sidebar-inner">
+          <div class="logo">
+            <div class="logo-left"><span class="logo-icon">🏫</span> 校园通知Agent</div>
+            <button class="icon-btn" title="通知中心" @click="openNc()"><el-icon><Bell></Bell></el-icon></button>
+          </div>
+
+          <el-button type="primary" class="new-chat-btn" @click="newChat()">
+            <el-icon><Plus></Plus></el-icon>&nbsp;新对话
+          </el-button>
+
+          <el-button class="nc-entry-btn" @click="openNc()">
+            <el-icon><Bell></Bell></el-icon>&nbsp;通知中心
+            <el-badge :value="state.unreadCount" :hidden="!state.unreadCount" :max="99" class="nc-badge"></el-badge>
+          </el-button>
+
+          <div class="filter-bar">
+            <el-checkbox v-model="state.filterIncomplete">只看信息不全</el-checkbox>
+            <span class="filter-count">共 {{ state.sessions.length }} 条</span>
+          </div>
+
+          <div class="history-head">
+            <span class="label">历史记录</span>
+            <span class="count">{{ state.sessions.length }}</span>
+          </div>
+
+          <div class="history-list">
+            <template v-if="filteredSessions.length">
+              <div v-for="s in filteredSessions" :key="s.id" class="history-item"
+                   :class="{ active: state.currentSessionId === s.id, pinned: s.pinned }"
+                   @click="switchSession(s.id)">
+                <span class="h-icon">{{ s.hasIncomplete ? '⚠️' : (s.messages.some(m => m.type === 'result') ? '📢' : '💬') }}</span>
+                <span class="h-text">{{ s.title }}</span>
+                <span class="h-status" :class="s.hasIncomplete ? 'inc' : (s.lastMessage ? 'sent' : '')">
+                  {{ s.hasIncomplete ? '信息不全' : (s.lastMessage ? '已处理' : '新') }}
+                </span>
+                <span class="h-actions" @click.stop>
+                  <button class="pin-btn" :class="{ pinned: s.pinned }" @click="togglePin(s.id)" title="置顶">📌</button>
+                  <button class="del-btn" @click="confirmDeleteSession(s)" title="删除">✕</button>
+                </span>
+              </div>
+            </template>
+            <el-empty v-else description="暂无对话" :image-size="60"></el-empty>
+          </div>
+
+          <!-- 后台管理入口：与后台管理端互联 -->
+          <a class="admin-entry" href="admin.html" target="_blank" title="进入后台管理端（管理员登录）">
+            <el-icon><Setting></Setting></el-icon>
+            <span>后台管理</span>
+            <span class="admin-entry-arrow">↗</span>
+          </a>
+
+          <div class="user-bar">
+            <div class="u-avatar">{{ state.currentUser ? state.currentUser.name.charAt(0) : '?' }}</div>
+            <div class="u-info">
+              <div class="u-name">{{ state.currentUser ? state.currentUser.name : '未登录' }}</div>
+              <div class="u-sub">
+                {{ state.currentUser
+                    ? (state.currentUser.role === 'teacher' ? '👨‍🏫 教师' : '🎓 学生') + ' · ' + state.currentUser.studentId
+                    : '点击登录' }}
+              </div>
+            </div>
+            <el-button v-if="!state.currentUser" size="small" type="primary" @click="openLogin()">登录</el-button>
+            <button v-else class="u-logout" @click="logout()" title="退出登录">⏻</button>
+          </div>
+
+          <div class="footer">
+            <span>🤖 智谱AI · Vue3 版</span>
+            <button v-if="state.sessions.length" class="clear-all" @click="clearAll()">清空</button>
+          </div>
+        </div>
+      `,
+    };
+
+    // ============================================================
+    //  组件：通知中心
+    // ============================================================
+    const NotificationCenter = {
+      name: 'NotificationCenter',
+      setup() {
+        return {
+          state, shortTime,
+          switchNcTab, markRead, removeInbox, sendDraft, delNotification, readPct, readState,
+        };
+      },
+      template: `
+        <div class="nc">
+          <div class="nc-head">
+            <div class="nc-title">📥 通知中心</div>
+            <button class="icon-btn" @click="state.ncVisible = false">✕</button>
+          </div>
+
+          <div class="nc-tabs">
+            <button :class="{ active: state.ncTab === 'inbox' }" @click="switchNcTab('inbox')">
+              收件箱 <span v-if="state.unreadCount" class="nc-badge">{{ state.unreadCount }}</span>
+            </button>
+            <button :class="{ active: state.ncTab === 'sent' }" @click="switchNcTab('sent')">已发送</button>
+            <button :class="{ active: state.ncTab === 'draft' }" @click="switchNcTab('draft')">草稿箱</button>
+          </div>
+
+          <div class="nc-list" v-loading="state.ncLoading">
+            <template v-if="state.ncList.length">
+              <div v-for="n in state.ncList" :key="n.id" class="nc-item"
+                   :class="{ unread: state.ncTab === 'inbox' && !n.isRead }"
+                   @click="state.ncTab === 'inbox' && markRead(n)">
+                <div class="nc-item-head">
+                  <span class="nc-item-title">{{ n.title }}</span>
+                  <span class="nc-item-dot" :class="{ read: state.ncTab === 'inbox' && n.isRead }">
+                    {{ state.ncTab === 'inbox' ? (n.isRead ? '✓ 已读' : '● 未读') : (n.status === 'draft' ? '📝 草稿' : '✅ 已发送') }}
+                  </span>
+                </div>
+                <div class="nc-item-meta">👤 {{ state.ncTab === 'inbox' ? (n.sender ? n.sender.name : '未知') : '我' }} · 👥 {{ n.audience }} · {{ shortTime(n.createdAt) }}</div>
+                <div v-if="n.location || n.eventTime" class="nc-item-meta">
+                  {{ n.location ? '📍 ' + n.location : '' }}{{ n.eventTime ? ' ⏰ ' + n.eventTime : '' }}
+                </div>
+                <div class="nc-item-body">{{ n.content }}</div>
+
+                <div v-if="state.ncTab === 'sent'" class="nc-read">
+                  <div class="nc-read-bar">
+                    <div class="nc-read-fill" :class="readState(n)" :style="{ width: readPct(n) + '%' }"></div>
+                  </div>
+                  <span class="nc-read-count">📖 已读 {{ n.readCount || 0 }}/{{ n.recipientCount || 0 }}</span>
+                </div>
+
+                <div class="nc-actions">
+                  <el-button v-if="state.ncTab === 'draft'" size="small" type="success" @click.stop="sendDraft(n)">📤 发送</el-button>
+                  <el-button v-if="state.ncTab === 'inbox'" size="small" @click.stop="removeInbox(n)">🗑 移除</el-button>
+                  <el-button v-if="state.ncTab !== 'inbox'" size="small" type="danger" plain @click.stop="delNotification(n)">🗑 删除</el-button>
+                </div>
+              </div>
+            </template>
+            <el-empty v-else :description="'暂无' + ({ inbox: '收到的通知', sent: '发出的通知', draft: '草稿' }[state.ncTab])" :image-size="80"></el-empty>
+          </div>
+        </div>
+      `,
+    };
+
+    // ============================================================
+    //  未读轮询 + 响应式
+    // ============================================================
+    async function pollUnread() {
+      if (!state.currentUser) return;
+      try {
+        const r = await api('GET', `/notifications/received?userId=${state.currentUser.id}`);
+        if (Array.isArray(r.data)) {
+          state.unreadCount = r.data.filter(n => !n.isRead).length;
+        }
+      } catch (e) { /* 忽略 */ }
+    }
+
+    window.addEventListener('resize', () => {
+      state.isMobile = window.innerWidth < 768;
+    });
+
+    // ============================================================
+    //  根应用
+    // ============================================================
+    const examples = [
+      { label: '📌 体测通知', text: '明天下午3点，全体大二学生在操场集合，进行体测，请穿运动服。' },
+      { label: '📌 会议通知', text: '下周一上午10点，全体教职工在行政楼会议室召开例会，讨论期末安排。' },
+      { label: '📌 活动通知', text: '本周五晚上7点，大一新生在多功能厅参加迎新晚会，请提前入场。' },
+      { label: '📌 复杂通知', text: '下周三下午2点，党员在图书馆报告厅参加党课学习，请带好笔记本。' },
+    ];
+
+    function fillExample(i) {
+      state.inputText = examples[i] ? examples[i].text : '';
+    }
+
+    const app = createApp({
+      setup() {
+        return {
+          state, zhCn, examples,
+          currentSession, currentMessages, messagesRef,
+          ncDrawerSize, canSend,
+          handleSend, confirmSend, saveDraft, openEdit, saveEdit, fillExample,
+          openNc, openLogin, doLogin, logout,
+        };
+      },
+    });
+
+    // 注册图标组件
+    if (typeof ElementPlusIconsVue !== 'undefined') {
+      for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+        app.component(key, component);
+      }
+    }
+
+    // 注册局部组件
+    app.component('sidebar-inner', SidebarInner);
+    app.component('notification-center', NotificationCenter);
+
+    app.use(ElementPlus);
+    app.mount('#app');
+
+    // ============================================================
+    //  初始化
+    // ============================================================
+    loadSessions();
+    if (state.sessions.length === 0) {
+      newChat();
+    } else {
+      state.currentSessionId = state.sessions[state.sessions.length - 1].id;
+      scrollToBottom();
+    }
+
+    if (!state.currentUser) {
+      openLogin();
+    } else {
+      pollUnread();
+    }
+    setInterval(pollUnread, 30000);
+  </script>
+</body>
+
+</html>

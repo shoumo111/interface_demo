@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>校园通知系统 · 后台管理</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+
+    body {
+      background: #f1f5f9;
+      color: #1e293b;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .app {
+      display: flex;
+      height: 100vh;
+    }
+
+    /* ===== 侧边栏 ===== */
+    .sidebar {
+      width: 220px;
+      min-width: 220px;
+      background: #0f172a;
+      color: #cbd5e1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .sidebar .logo {
+      padding: 20px 18px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      border-bottom: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar .logo .icon {
+      width: 30px;
+      height: 30px;
+      background: #3b82f6;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+    }
+
+    .sidebar nav {
+      flex: 1;
+      padding: 12px 10px;
+    }
+
+    .sidebar nav .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #94a3b8;
+      margin-bottom: 4px;
+      transition: 0.15s;
+      user-select: none;
+    }
+
+    .sidebar nav .nav-item:hover {
+      background: #1e293b;
+      color: #e2e8f0;
+    }
+
+    .sidebar nav .nav-item.active {
+      background: #1d4ed8;
+      color: #fff;
+    }
+
+    .sidebar nav .nav-item .badge {
+      margin-left: auto;
+      background: #ef4444;
+      color: #fff;
+      font-size: 11px;
+      padding: 1px 8px;
+      border-radius: 10px;
+    }
+
+    .sidebar .footer {
+      padding: 14px 18px;
+      border-top: 1px solid #1e293b;
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .sidebar .footer .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      margin-right: 6px;
+    }
+
+    .sidebar .footer .status-dot.offline {
+      background: #ef4444;
+    }
+
+    /* ===== 主区域 ===== */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .main .topbar {
+      background: #fff;
+      padding: 16px 28px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .main .topbar .title {
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .main .topbar .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .main .topbar .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.15s;
+      color: #334155;
+    }
+
+    .main .topbar .btn:hover {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+    }
+
+    .main .topbar .btn.primary {
+      background: #1d4ed8;
+      color: #fff;
+      border-color: #1d4ed8;
+    }
+
+    .main .topbar .btn.primary:hover {
+      background: #1e40af;
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px;
+    }
+
+    /* ===== 统计卡片 ===== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 18px;
+      border: 1px solid #e2e8f0;
+      transition: 0.15s;
+    }
+
+    .stat-card:hover {
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .stat-card .s-label {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+
+    .stat-card .s-value {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .stat-card .s-icon {
+      float: right;
+      font-size: 20px;
+      opacity: 0.7;
+    }
+
+    /* ===== 面板 ===== */
+    .panel {
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .panel .panel-head {
+      padding: 14px 20px;
+      border-bottom: 1px solid #eef2f7;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .panel .panel-head .p-title {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .panel .panel-head .filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .panel .panel-head input,
+    .panel .panel-head select {
+      padding: 7px 12px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      font-size: 13px;
+      outline: none;
+      background: #fff;
+    }
+
+    .panel .panel-head input:focus,
+    .panel .panel-head select:focus {
+      border-color: #3b82f6;
+    }
+
+    /* ===== 表格 ===== */
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      text-align: left;
+      padding: 11px 14px;
+      background: #f8fafc;
+      color: #64748b;
+      font-weight: 600;
+      border-bottom: 1px solid #eef2f7;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 11px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: #f8fafc;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .tag.blue {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .tag.green {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .tag.yellow {
+      background: #fef9c3;
+      color: #854d0e;
+    }
+
+    .tag.gray {
+      background: #f1f5f9;
+      color: #475569;
+    }
+
+    .tag.purple {
+      background: #ede9fe;
+      color: #6d28d9;
+    }
+
+    .tag.red {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .row-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .row-actions button {
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      font-size: 12px;
+      cursor: pointer;
+      color: #475569;
+      transition: 0.15s;
+    }
+
+    .row-actions button:hover {
+      background: #f1f5f9;
+    }
+
+    .row-actions button.edit:hover {
+      border-color: #3b82f6;
+      color: #1d4ed8;
+    }
+
+    .row-actions button.danger:hover {
+      border-color: #ef4444;
+      color: #dc2626;
+      background: #fef2f2;
+    }
+
+    .empty {
+      padding: 40px;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+
+    /* ===== Modal ===== */
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 28px 32px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+      animation: pop 0.2s ease;
+    }
+
+    @keyframes pop {
+      0% {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .modal h3 {
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .modal .sub {
+      color: #64748b;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 9px 12px;
+      border-radius: 9px;
+      border: 1px solid #e2e8f0;
+      font-size: 13px;
+      outline: none;
+      transition: 0.15s;
+      background: #fff;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+
+    .modal .actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 22px;
+    }
+
+    .modal .actions .btn {
+      padding: 9px 22px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .modal .actions .btn-cancel {
+      background: #f1f5f9;
+      color: #334155;
+    }
+
+    .modal .actions .btn-cancel:hover {
+      background: #e2e8f0;
+    }
+
+    .modal .actions .btn-save {
+      background: #1d4ed8;
+      color: #fff;
+    }
+
+    .modal .actions .btn-save:hover {
+      background: #1e40af;
+    }
+
+    .modal .actions .btn-danger {
+      background: #dc2626;
+      color: #fff;
+    }
+
+    .modal .actions .btn-danger:hover {
+      background: #b91c1c;
+    }
+
+    /* ===== Toast ===== */
+    #toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toast-item {
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      animation: slideIn 0.25s ease;
+    }
+
+    .toast-item.ok {
+      background: #16a34a;
+    }
+
+    .toast-item.err {
+      background: #dc2626;
+    }
+
+    @keyframes slideIn {
+      0% {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        display: none;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <!-- ===== 侧边栏 ===== -->
+    <div class="sidebar">
+      <div class="logo">
+        <div class="icon">⚙️</div>
+        后台管理
+      </div>
+      <nav>
+        <div class="nav-item active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 总览</div>
+        <div class="nav-item" data-tab="usage" onclick="switchTab('usage')">📋 使用记录</div>
+        <div class="nav-item" data-tab="users" onclick="switchTab('users')">👥 用户管理</div>
+        <div class="nav-item" data-tab="notifications" onclick="switchTab('notifications')">📢 通知管理</div>
+      </nav>
+      <div class="footer">
+        <div id="footerAdmin" style="margin-bottom:8px;font-size:12px;line-height:1.5;"></div>
+        <span class="status-dot" id="connDot"></span><span id="connText">连接中...</span>
+      </div>
+    </div>
+
+    <!-- ===== 主区域 ===== -->
+    <div class="main">
+      <div class="topbar">
+        <div class="title" id="pageTitle">📊 总览</div>
+        <div class="actions">
+          <button class="btn" onclick="location.reload()">🔄 刷新</button>
+          <a class="btn" href="index.html" target="_blank">🏫 打开用户端</a>
+          <button class="btn" onclick="adminLogout()">⏻ 退出登录</button>
+        </div>
+      </div>
+
+      <div class="content" id="content">
+        <!-- 由 JS 渲染 -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 编辑 Modal ===== -->
+  <div class="overlay" id="modalOverlay">
+    <div class="modal">
+      <h3 id="modalTitle">编辑</h3>
+      <p class="sub" id="modalSub">请填写以下信息</p>
+      <div id="modalBody"></div>
+      <div class="actions">
+        <button class="btn btn-cancel" onclick="closeModal()">取消</button>
+        <button class="btn btn-save" id="modalSaveBtn" onclick="saveModal()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 管理员登录 ===== -->
+  <div class="overlay" id="adminLoginOverlay">
+    <div class="modal" style="max-width:400px;">
+      <div style="text-align:center;margin-bottom:10px;font-size:40px;">🔐</div>
+      <h3 style="text-align:center;">后台管理员登录</h3>
+      <p class="sub" style="text-align:center;">请输入管理员账号和密码以访问后台管理</p>
+      <div class="form-group">
+        <label>管理员账号（学号/工号）</label>
+        <input type="text" id="adminId" placeholder="如 admin"
+          onkeydown="if(event.key==='Enter')document.getElementById('adminPwd').focus()" />
+      </div>
+      <div class="form-group">
+        <label>密码</label>
+        <input type="password" id="adminPwd" placeholder="请输入密码..." onkeydown="if(event.key==='Enter')adminLogin()" />
+      </div>
+      <div style="font-size:12px;color:#94a3b8;margin-top:10px;line-height:1.6;">
+        💡 管理员账号：<strong>admin</strong>（一级）· <strong>admin2</strong>、<strong>admin3</strong>（二级），密码均为
+        <strong>admin123</strong><br />
+        一级管理员可查看全部数据（含管理员信息和用户密码）；二级管理员不可见
+      </div>
+      <div class="actions" style="margin-top:18px;justify-content:center;">
+        <button class="btn btn-save" onclick="adminLogin()" style="padding:10px 40px;">🔓 登录</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    // ============================================================
+    //  配置与状态
+    // ============================================================
+    const API = 'http://localhost:3001/api';
+    let currentTab = 'dashboard';
+    let modalMode = 'user'; // user | notification
+    let modalId = null;
+    let adminToken = sessionStorage.getItem('admin_token') || '';
+    let adminLevel = Number(sessionStorage.getItem('admin_level') || 0);
+    let adminInfo = JSON.parse(sessionStorage.getItem('admin_info') || 'null');
+
+    const ACTION_LABELS = {
+      login: ['登录', 'blue'],
+      send_notification: ['发送通知', 'green'],
+      save_draft: ['保存草稿', 'yellow'],
+      send_draft: ['草稿发送', 'purple'],
+      mark_read: ['标记已读', 'gray'],
+      remove_inbox: ['移除收件', 'gray'],
+      delete_notification: ['删除通知', 'red'],
+      create_user: ['新增用户', 'green'],
+      update_user: ['编辑用户', 'yellow'],
+      update_notification: ['编辑通知', 'yellow'],
+    };
+
+    // ============================================================
+    //  工具
+    // ============================================================
+    async function api(method, path, body) {
+      const headers = { 'Content-Type': 'application/json' };
+      if (adminToken) headers['Authorization'] = 'Bearer ' + adminToken;
+      const res = await fetch(API + path, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      const data = await res.json().catch(() => ({}));
+      // token 失效 → 自动退回登录页
+      if (res.status === 401 && data.error && /未授权/.test(data.error)) {
+        adminToken = '';
+        adminLevel = 0;
+        adminInfo = null;
+        sessionStorage.removeItem('admin_token');
+        sessionStorage.removeItem('admin_level');
+        sessionStorage.removeItem('admin_info');
+        showAdminLogin();
+      }
+      return { status: res.status, data };
+    }
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    function fmtTime(t) {
+      if (!t) return '-';
+      const d = new Date(t);
+      const p = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+    }
+
+    function toast(msg, type) {
+      const el = document.createElement('div');
+      el.className = 'toast-item ' + (type || '');
+      el.textContent = msg;
+      document.getElementById('toast').appendChild(el);
+      setTimeout(() => el.remove(), 3200);
+    }
+
+    function tag(text, color) {
+      return `<span class="tag ${color}">${esc(text)}</span>`;
+    }
+
+    // ============================================================
+    //  页面切换
+    // ============================================================
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === tab));
+      const titles = { dashboard: '📊 总览', usage: '📋 使用记录', users: '👥 用户管理', notifications: '📢 通知管理' };
+      document.getElementById('pageTitle').textContent = titles[tab];
+      if (tab === 'dashboard') loadDashboard();
+      else if (tab === 'usage') loadUsage();
+      else if (tab === 'users') loadUsers();
+      else loadNotifications();
+    }
+
+    // ============================================================
+    //  总览
+    // ============================================================
+    async function loadDashboard() {
+      const el = document.getElementById('content');
+      const r = await api('GET', '/stats');
+      if (r.status !== 200) {
+        el.innerHTML = `<div class="empty">❌ 无法连接后端：${esc(r.data.error || r.status)}</div>`;
+        setConn(false);
+        return;
+      }
+      setConn(true);
+      const s = r.data;
+      el.innerHTML = `
+        <div class="stats-grid">
+          ${statCard('用户总数', s.userCount, '👥')}
+          ${statCard('学生', s.studentCount, '🎓')}
+          ${statCard('教师', s.teacherCount, '👨‍🏫')}
+          ${adminLevel === 1 ? statCard('管理员', s.adminCount, '🔐') : ''}
+          ${statCard('通知总数', s.notificationCount, '📢')}
+          ${statCard('已发送', s.sentCount, '📤')}
+          ${statCard('未读', s.unreadCount, '🔴')}
+          ${statCard('使用记录', s.usageCount, '📋')}
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="p-title">📢 最近通知</span>
+            <button class="btn" onclick="switchTab('notifications')">查看全部 →</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>标题</th><th>发送者</th><th>受众</th><th>状态</th><th>收件</th><th>时间</th></tr></thead>
+              <tbody>
+                ${(s.recent || []).map(n => `
+                  <tr>
+                    <td>#${n.id}</td>
+                    <td>${esc(n.title)}</td>
+                    <td>${esc(n.sender ? n.sender.name : '?')}</td>
+                    <td>${esc(n.audience)}</td>
+                    <td>${n.status === 'draft' ? tag('草稿', 'yellow') : tag('已发送', 'green')}</td>
+                    <td>${n.recipientCount} 人</td>
+                    <td>${fmtTime(n.createdAt)}</td>
+                  </tr>`).join('') || `<tr><td colspan="7"><div class="empty">暂无通知</div></td></tr>`}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function statCard(label, value, icon) {
+      return `<div class="stat-card"><span class="s-icon">${icon}</span><div class="s-label">${label}</div><div class="s-value">${value == null ? '-' : value}</div></div>`;
+    }
+
+    // ============================================================
+    //  使用记录
+    // ============================================================
+    async function loadUsage() {
+      const el = document.getElementById('content');
+      el.innerHTML = `
+        <div class="panel">
+          <div class="panel-head">
+            <span class="p-title">📋 使用记录</span>
+            <div class="filters">
+              <select id="usageAction" onchange="loadUsageData()">
+                <option value="">全部操作</option>
+                ${Object.entries(ACTION_LABELS).map(([k, v]) => `<option value="${k}">${v[0]}</option>`).join('')}
+              </select>
+              <input id="usageKeyword" placeholder="搜索姓名/学号..." style="width:160px;" oninput="loadUsageData()" />
+              <button class="btn danger" onclick="clearUsage()">🗑 清空记录</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table id="usageTable"><tbody></tbody></table></div>
+        </div>
+      `;
+      loadUsageData();
+    }
+
+    async function loadUsageData() {
+      const action = document.getElementById('usageAction').value;
+      const keyword = document.getElementById('usageKeyword').value.trim();
+      const r = await api('GET', `/usage?limit=300${action ? '&action=' + action : ''}`);
+      let list = Array.isArray(r.data) ? r.data : [];
+      if (keyword) {
+        list = list.filter(l =>
+          (l.user && (l.user.name || '').includes(keyword)) ||
+          (l.user && (l.user.studentId || '').includes(keyword))
+        );
+      }
+      const tbody = document.querySelector('#usageTable tbody');
+      if (!tbody) return;
+      tbody.innerHTML = `<thead><tr><th>时间</th><th>用户</th><th>身份</th><th>操作</th><th>详情</th></tr></thead>` +
+        list.map(l => {
+          const [label, color] = ACTION_LABELS[l.action] || [l.action, 'gray'];
+          return `<tr>
+            <td style="white-space:nowrap;">${fmtTime(l.createdAt)}</td>
+            <td>${esc(l.user ? l.user.name : '已删除用户')} <span style="color:#94a3b8;font-size:12px;">${esc(l.user ? l.user.studentId : '')}</span></td>
+            <td>${l.user ? tag(l.user.role === 'teacher' ? '教师' : l.user.role === 'admin' ? '管理员' : '学生', l.user.role === 'teacher' ? 'blue' : l.user.role === 'admin' ? 'purple' : 'gray') : '-'}</td>
+            <td>${tag(label, color)}</td>
+            <td>${esc(l.detail || '')}</td>
+          </tr>`;
+        }).join('') || `<tr><td colspan="5"><div class="empty">暂无使用记录</div></td></tr>`;
+    }
+
+    async function clearUsage() {
+      if (!confirm('确定清空所有使用记录吗？此操作不可撤销。')) return;
+      const r = await api('DELETE', '/usage');
+      if (r.data.ok) { toast(`已清空 ${r.data.deleted} 条记录`, 'ok'); loadUsageData(); }
+      else toast('清空失败：' + (r.data.error || r.status), 'err');
+    }
+
+    // ============================================================
+    //  用户管理
+    // ============================================================
+    async function loadUsers() {
+      const el = document.getElementById('content');
+      el.innerHTML = `
+        <div class="panel">
+          <div class="panel-head">
+            <span class="p-title">👥 用户管理</span>
+            <div class="filters">
+              <input id="userKeyword" placeholder="搜索姓名/学号/专业..." style="width:200px;" oninput="loadUsersData()" />
+              <select id="userRole" onchange="loadUsersData()">
+                <option value="">全部身份</option>
+                <option value="student">学生</option>
+                <option value="teacher">教师</option>
+                ${adminLevel === 1 ? '<option value="admin">管理员</option>' : ''}
+              </select>
+              <button class="btn primary" onclick="openUserModal()">＋ 新增用户</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table id="userTable"><tbody></tbody></table></div>
+        </div>
+      `;
+      loadUsersData();
+    }
+
+    async function loadUsersData() {
+      const keyword = document.getElementById('userKeyword').value.trim();
+      const role = document.getElementById('userRole').value;
+      let query = '';
+      if (keyword) query += 'keyword=' + encodeURIComponent(keyword) + '&';
+      if (role) query += 'role=' + role;
+      const r = await api('GET', '/users?' + query);
+      const list = Array.isArray(r.data) ? r.data : [];
+      const tbody = document.querySelector('#userTable tbody');
+      if (!tbody) return;
+      const isL1 = adminLevel === 1;
+      const pwdHeader = isL1 ? '<th>密码</th>' : '';
+      const pwdCell = (u) => isL1
+        ? `<td><code title="${esc(u.password || '')}" style="font-size:11px;">${u.password ? esc(u.password.slice(0, 18)) + '…' : '-'}</code></td>`
+        : '';
+      const roleTag = (u) => u.role === 'teacher'
+        ? tag('教师', 'blue')
+        : u.role === 'admin'
+          ? tag('管理员', 'purple')
+          : tag('学生', 'gray');
+      tbody.innerHTML = `<thead><tr><th>学号/工号</th><th>姓名</th><th>身份</th><th>职务</th><th>年级</th><th>专业</th><th>班级</th><th>电话</th><th>邮箱</th>${pwdHeader}<th>操作</th></tr></thead>` +
+        list.map(u => `<tr>
+          <td>${esc(u.studentId)}</td>
+          <td><strong>${esc(u.name)}</strong></td>
+          <td>${roleTag(u)}</td>
+          <td>${u.position ? tag(u.position, 'purple') : '-'}</td>
+          <td>${esc(u.grade || '-')}</td>
+          <td>${esc(u.major || '-')}</td>
+          <td>${esc(u.className || '-')}</td>
+          <td>${esc(u.phone || '-')}</td>
+          <td>${esc(u.email || '-')}</td>
+          ${pwdCell(u)}
+          <td><div class="row-actions">
+            <button class="edit" onclick="openUserModal(${u.id})">✏️ 编辑</button>
+            <button class="danger" onclick="deleteUser(${u.id}, '${esc(u.name)}')">🗑 删除</button>
+          </div></td>
+        </tr>`).join('') || `<tr><td colspan="${isL1 ? 11 : 10}"><div class="empty">暂无用户</div></td></tr>`;
+    }
+
+    function toggleAdminLevel() {
+      const lvl = document.getElementById('f_adminLevel');
+      const role = document.getElementById('f_role');
+      if (lvl && role) {
+        lvl.closest('.form-group').style.display = role.value === 'admin' ? '' : 'none';
+      }
+    }
+
+    function openUserModal(id) {
+      modalMode = 'user';
+      modalId = id || null;
+      document.getElementById('modalTitle').textContent = id ? '✏️ 编辑用户' : '＋ 新增用户';
+      document.getElementById('modalSub').textContent = id ? '修改用户信息' : '创建新的用户账号';
+      const isL1 = adminLevel === 1;
+      const roleOpts = `<option value="student">学生</option><option value="teacher">教师</option>${isL1 ? '<option value="admin">管理员</option>' : ''}`;
+      const adminLevelField = isL1 ? `
+          <div class="form-group"><label>管理员级别</label><select id="f_adminLevel">
+            <option value="2">二级管理员（看不到管理员信息和用户密码）</option>
+            <option value="1">一级管理员（可查看全部数据）</option>
+          </select></div>` : '';
+      const pwdField = `
+          <div class="form-group"><label>密码</label><input type="password" id="f_password" placeholder="${id ? '留空则不修改密码' : '设置登录密码'}" autocomplete="new-password" /></div>`;
+      const fields = `
+        <div class="form-grid">
+          <div class="form-group"><label>学号/工号 *</label><input id="f_studentId" placeholder="如 2027001 / T010" /></div>
+          <div class="form-group"><label>姓名 *</label><input id="f_name" placeholder="姓名" /></div>
+          <div class="form-group"><label>身份</label><select id="f_role" onchange="toggleAdminLevel()">${roleOpts}</select></div>
+          ${adminLevelField}
+          ${pwdField}
+          <div class="form-group"><label>职务（学生有职务才可发通知）</label><input id="f_position" placeholder="如 社长 / 会长 / 班长" /></div>
+          <div class="form-group"><label>年级</label><input id="f_grade" placeholder="如 大一 / 2026级" /></div>
+          <div class="form-group"><label>专业</label><input id="f_major" placeholder="专业" /></div>
+          <div class="form-group"><label>班级</label><input id="f_className" placeholder="如 计科2601" /></div>
+          <div class="form-group"><label>电话</label><input id="f_phone" placeholder="联系电话" /></div>
+          <div class="form-group"><label>邮箱</label><input id="f_email" placeholder="邮箱" /></div>
+        </div>`;
+      document.getElementById('modalBody').innerHTML = fields;
+      if (id) {
+        api('GET', '/users/' + id).then(r => {
+          if (r.status === 200) fillUserForm(r.data);
+        });
+      }
+      openModal();
+    }
+
+    function fillUserForm(u) {
+      document.getElementById('f_studentId').value = u.studentId;
+      document.getElementById('f_name').value = u.name;
+      document.getElementById('f_role').value = u.role;
+      document.getElementById('f_position').value = u.position || '';
+      document.getElementById('f_grade').value = u.grade || '';
+      document.getElementById('f_major').value = u.major || '';
+      document.getElementById('f_className').value = u.className || '';
+      document.getElementById('f_phone').value = u.phone || '';
+      document.getElementById('f_email').value = u.email || '';
+      if (document.getElementById('f_adminLevel')) document.getElementById('f_adminLevel').value = String(u.adminLevel || 2);
+      if (document.getElementById('f_password')) document.getElementById('f_password').value = '';
+      toggleAdminLevel();
+    }
+
+    async function deleteUser(id, name) {
+      if (!confirm(`确定删除用户「${name}」吗？其发出的通知、收件记录、使用记录将一并删除。`)) return;
+      const r = await api('DELETE', '/users/' + id);
+      if (r.data.ok) { toast(`已删除用户「${name}」`, 'ok'); loadUsersData(); }
+      else toast('删除失败：' + (r.data.error || r.status), 'err');
+    }
+
+    // ============================================================
+    //  通知管理
+    // ============================================================
+    async function loadNotifications() {
+      const el = document.getElementById('content');
+      el.innerHTML = `
+        <div class="panel">
+          <div class="panel-head">
+            <span class="p-title">📢 通知管理</span>
+            <div class="filters">
+              <input id="notifKeyword" placeholder="搜索标题/内容/受众..." style="width:200px;" oninput="loadNotifsData()" />
+              <select id="notifStatus" onchange="loadNotifsData()">
+                <option value="">全部状态</option>
+                <option value="sent">已发送</option>
+                <option value="draft">草稿</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap"><table id="notifTable"><tbody></tbody></table></div>
+        </div>
+      `;
+      loadNotifsData();
+    }
+
+    async function loadNotifsData() {
+      const keyword = document.getElementById('notifKeyword').value.trim();
+      const status = document.getElementById('notifStatus').value;
+      let query = '';
+      if (keyword) query += 'keyword=' + encodeURIComponent(keyword) + '&';
+      if (status) query += 'status=' + status;
+      const r = await api('GET', '/notifications?' + query);
+      const list = Array.isArray(r.data) ? r.data : [];
+      const tbody = document.querySelector('#notifTable tbody');
+      if (!tbody) return;
+      tbody.innerHTML = `<thead><tr><th>ID</th><th>标题</th><th>发送者</th><th>受众</th><th>时间</th><th>地点</th><th>状态</th><th>收件/已读</th><th>创建时间</th><th>操作</th></tr></thead>` +
+        list.map(n => `<tr>
+          <td>#${n.id}</td>
+          <td style="max-width:180px;">${esc(n.title)}</td>
+          <td>${esc(n.sender ? n.sender.name : '?')}</td>
+          <td>${esc(n.audience)}</td>
+          <td>${esc(n.eventTime || '-')}</td>
+          <td>${esc(n.location || '-')}</td>
+          <td>${n.status === 'draft' ? tag('草稿', 'yellow') : tag('已发送', 'green')}</td>
+          <td>${n.recipientCount || 0} / ${n.readCount || 0}</td>
+          <td style="white-space:nowrap;">${fmtTime(n.createdAt)}</td>
+          <td><div class="row-actions">
+            <button class="edit" onclick="openNotifModal(${n.id})">✏️ 编辑</button>
+            <button class="danger" onclick="deleteNotif(${n.id}, '${esc(n.title)}')">🗑 删除</button>
+          </div></td>
+        </tr>`).join('') || `<tr><td colspan="10"><div class="empty">暂无通知</div></td></tr>`;
+    }
+
+    function openNotifModal(id) {
+      modalMode = 'notification';
+      modalId = id;
+      document.getElementById('modalTitle').textContent = '✏️ 编辑通知 #' + id;
+      document.getElementById('modalSub').textContent = '修改通知内容（不重新解析收件人）';
+      document.getElementById('modalBody').innerHTML = `
+        <div class="form-grid">
+          <div class="form-group full"><label>标题</label><input id="f_title" /></div>
+          <div class="form-group full"><label>内容</label><textarea id="f_content" rows="3"></textarea></div>
+          <div class="form-group full"><label>受众</label><input id="f_audience" /></div>
+          <div class="form-group"><label>时间</label><input id="f_eventTime" /></div>
+          <div class="form-group"><label>地点</label><input id="f_location" /></div>
+          <div class="form-group full"><label>备注</label><input id="f_notes" /></div>
+          <div class="form-group"><label>状态</label><select id="f_status"><option value="sent">已发送</option><option value="draft">草稿</option></select></div>
+        </div>`;
+      api('GET', '/notifications/' + id).then(r => {
+        if (r.status !== 200) return;
+        const n = r.data;
+        document.getElementById('f_title').value = n.title;
+        document.getElementById('f_content').value = n.content;
+        document.getElementById('f_audience').value = n.audience;
+        document.getElementById('f_eventTime').value = n.eventTime || '';
+        document.getElementById('f_location').value = n.location || '';
+        document.getElementById('f_notes').value = n.notes || '';
+        document.getElementById('f_status').value = n.status;
+      });
+      openModal();
+    }
+
+    async function deleteNotif(id, title) {
+      if (!confirm(`确定删除通知「${title}」吗？所有收件人记录将一并删除。`)) return;
+      const r = await api('DELETE', '/notifications/' + id);
+      if (r.data.ok) { toast(`已删除通知 #${id}`, 'ok'); loadNotifsData(); }
+      else toast('删除失败：' + (r.data.error || r.status), 'err');
+    }
+
+    // ============================================================
+    //  Modal 通用
+    // ============================================================
+    function openModal() {
+      document.getElementById('modalOverlay').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('show');
+    }
+
+    async function saveModal() {
+      if (modalMode === 'user') {
+        const payload = {
+          studentId: document.getElementById('f_studentId').value.trim(),
+          name: document.getElementById('f_name').value.trim(),
+          role: document.getElementById('f_role').value,
+          position: document.getElementById('f_position').value.trim() || null,
+          grade: document.getElementById('f_grade').value.trim() || null,
+          major: document.getElementById('f_major').value.trim() || null,
+          className: document.getElementById('f_className').value.trim() || null,
+          phone: document.getElementById('f_phone').value.trim() || null,
+          email: document.getElementById('f_email').value.trim() || null,
+        };
+        const pwdEl = document.getElementById('f_password');
+        if (pwdEl && pwdEl.value) payload.password = pwdEl.value;
+        const lvlEl = document.getElementById('f_adminLevel');
+        if (lvlEl && payload.role === 'admin') payload.adminLevel = Number(lvlEl.value) === 1 ? 1 : 2;
+        if (!payload.studentId || !payload.name) { toast('学号/工号和姓名必填', 'err'); return; }
+        const r = modalId
+          ? await api('PATCH', '/users/' + modalId, payload)
+          : await api('POST', '/users', payload);
+        if (r.status < 300) { toast(modalId ? '✅ 用户已更新' : '✅ 用户已创建', 'ok'); closeModal(); loadUsersData(); }
+        else toast('保存失败：' + (r.data.error || r.status), 'err');
+      } else {
+        const payload = {
+          title: document.getElementById('f_title').value.trim(),
+          content: document.getElementById('f_content').value.trim(),
+          audience: document.getElementById('f_audience').value.trim(),
+          eventTime: document.getElementById('f_eventTime').value.trim() || null,
+          location: document.getElementById('f_location').value.trim() || null,
+          notes: document.getElementById('f_notes').value.trim() || null,
+          status: document.getElementById('f_status').value,
+        };
+        if (!payload.title || !payload.content) { toast('标题和内容必填', 'err'); return; }
+        const r = await api('PATCH', '/notifications/' + modalId, payload);
+        if (r.status < 300) { toast('✅ 通知已更新', 'ok'); closeModal(); loadNotifsData(); }
+        else toast('保存失败：' + (r.data.error || r.status), 'err');
+      }
+    }
+
+    // ============================================================
+    //  连接状态
+    // ============================================================
+    function setConn(ok) {
+      const dot = document.getElementById('connDot');
+      const text = document.getElementById('connText');
+      dot.className = 'status-dot ' + (ok ? '' : 'offline');
+      text.textContent = ok ? '后端已连接' : '后端未连接';
+    }
+
+    // ============================================================
+    //  管理员登录鉴权
+    // ============================================================
+    function updateAdminBar() {
+      const el = document.getElementById('footerAdmin');
+      if (!el) return;
+      if (adminInfo) {
+        const lvl = adminLevel === 1 ? '一级管理员' : '二级管理员';
+        el.innerHTML = `👤 ${esc(adminInfo.name)}（${esc(adminInfo.studentId)}）· <span style="color:#fbbf24;">${lvl}</span>`;
+      } else {
+        el.textContent = '';
+      }
+    }
+
+    function showAdminLogin() {
+      document.getElementById('adminLoginOverlay').classList.add('show');
+      setTimeout(() => document.getElementById('adminId').focus(), 100);
+    }
+
+    function hideAdminLogin() {
+      document.getElementById('adminLoginOverlay').classList.remove('show');
+    }
+
+    function checkAdmin() {
+      if (adminToken) return true;
+      showAdminLogin();
+      return false;
+    }
+
+    async function adminLogin() {
+      const studentId = document.getElementById('adminId').value.trim();
+      const pwd = document.getElementById('adminPwd').value;
+      if (!studentId || !pwd) { toast('请输入管理员账号和密码', 'err'); return; }
+      const btn = document.querySelector('#adminLoginOverlay .btn-save');
+      btn.disabled = true;
+      btn.textContent = '⏳ 登录中...';
+      try {
+        const r = await api('POST', '/admin/login', { studentId, password: pwd });
+        if (r.data.ok && r.data.token) {
+          adminToken = r.data.token;
+          adminLevel = r.data.adminLevel || 2;
+          adminInfo = r.data.user || null;
+          sessionStorage.setItem('admin_token', adminToken);
+          sessionStorage.setItem('admin_level', String(adminLevel));
+          sessionStorage.setItem('admin_info', JSON.stringify(adminInfo));
+          hideAdminLogin();
+          updateAdminBar();
+          toast('✅ 管理员登录成功（' + (adminLevel === 1 ? '一级管理员' : '二级管理员') + '）', 'ok');
+          switchTab(currentTab);
+        } else {
+          toast('登录失败：' + (r.data.error || r.status), 'err');
+          document.getElementById('adminPwd').value = '';
+          document.getElementById('adminPwd').focus();
+        }
+      } catch (e) {
+        toast('无法连接后端：' + e.message, 'err');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔓 登录';
+      }
+    }
+
+    async function adminLogout() {
+      if (adminToken) {
+        try { await api('POST', '/admin/logout', {}); } catch (e) { /* 忽略 */ }
+      }
+      adminToken = '';
+      adminLevel = 0;
+      adminInfo = null;
+      sessionStorage.removeItem('admin_token');
+      sessionStorage.removeItem('admin_level');
+      sessionStorage.removeItem('admin_info');
+      showAdminLogin();
+      toast('已退出登录', 'ok');
+    }
+
+    // ============================================================
+    //  初始化
+    // ============================================================
+    window.onload = function () {
+      if (checkAdmin()) {
+        hideAdminLogin();
+        updateAdminBar();
+        loadDashboard();
+        setInterval(() => {
+          if (currentTab === 'dashboard') loadDashboard();
+          else if (currentTab === 'usage') loadUsageData();
+        }, 15000);
+      }
+    };
+  </script>
+</body>
+
+</html>

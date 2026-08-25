@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  studentId  String   @unique
+  name       String
+  role       String   @default("student")
+  // 登录密码（bcrypt 哈希）；role=admin 时为管理员密码
+  password   String?
+  // 管理员级别：1 = 一级管理员（可看全部数据），2 = 二级管理员（看不到管理员信息和用户密码）
+  adminLevel Int?
+  grade      String?
+  major      String?
+  className  String?
+  position   String?
+  phone      String?
+  email      String?
+  createdAt  DateTime @default(now())
+
+  recipients    Recipient[]
+  notifications Notification[]
+  usageLogs     UsageLog[]
+}
+
+model Notification {
+  id        Int       @id @default(autoincrement())
+  title     String
+  content   String
+  audience  String
+  location  String?
+  eventTime String?
+  notes     String?
+  status    String    @default("pending")
+  senderId  Int
+  sender    User      @relation(fields: [senderId], references: [id])
+  sentAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  recipients Recipient[]
+}
+
+model Recipient {
+  id             Int       @id @default(autoincrement())
+  notificationId Int
+  userId         Int
+  isRead         Boolean   @default(false)
+  readAt         DateTime?
+  deliveredAt    DateTime  @default(now())
+
+  notification Notification @relation(fields: [notificationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@unique([notificationId, userId])
+}
+
+model UsageLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  action    String
+  detail    String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}

@@ -1,0 +1,22 @@
+# ===== 环境变量（含敏感信息：智谱 AI Key、密码）=====
+.env*
+!.env.example
+
+# ===== 数据库文件（含用户数据与密码哈希）=====
+*.db
+*.sqlite
+*.sqlite3
+
+# ===== Node 依赖 =====
+node_modules/
+
+# ===== 日志 =====
+*.log
+npm-debug.log*
+
+# ===== 系统 / 编辑器文件 =====
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
